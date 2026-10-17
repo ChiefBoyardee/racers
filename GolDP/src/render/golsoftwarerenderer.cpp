@@ -21,15 +21,15 @@ void NoopSpanRasterizer()
 
 static void NoopTriangleRasterizer(GolSoftwareRenderer*, D3DTLVERTEX*, D3DTLVERTEX*, D3DTLVERTEX*);
 
-static LegoS32 __fastcall BucketCommandArrayBySortByte0(
-	GolSoftwareRenderer::TriangleCommand** p_buckets,
-	GolSoftwareRenderer::TriangleCommand* p_command,
-	LegoS32 p_count
-);
-
 LegoU8 __fastcall BucketCommandsBySortByte0(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command
+);
+
+LegoS32 __fastcall BucketCommandArrayBySortByte0(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command,
+	LegoS32 p_count
 );
 
 static LegoU8 GetSoftwareTextureSizeCode(const MipmapLevel* p_level)
@@ -56,81 +56,217 @@ static LegoU8 GetSoftwareTextureSizeCode(const MipmapLevel* p_level)
 	}
 }
 
-// FUNCTION: GOLDP 0x10041000
+#ifdef COMPAT_MODE
+
 LegoU8 __fastcall BucketCommandsBySortByte3(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command
 )
 {
-	LegoU32 bucketIndex = 0;
-	GolSoftwareRenderer::TriangleCommand* command;
-
-	for (; p_command != NULL; p_buckets[bucketIndex] = command) {
-		bucketIndex = p_command->m_sortKey.m_bytes[3];
-		command = p_command;
-		p_command = p_command->m_next;
-		command->m_next = p_buckets[bucketIndex];
+	LegoU8 byte = 0;
+	while (p_command != NULL) {
+		GolSoftwareRenderer::TriangleCommand* next = p_command->m_next;
+		byte = p_command->m_sortKey.m_bytes[3];
+		p_command->m_next = p_buckets[byte];
+		p_buckets[byte] = p_command;
+		p_command = next;
 	}
-
-	return static_cast<LegoU8>(bucketIndex);
+	return byte;
 }
 
-// FUNCTION: GOLDP 0x10041030
+#else
+
+// FUNCTION: GOLDP 0x10041000
+__declspec(naked) LegoU8 __fastcall BucketCommandsBySortByte3(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command
+)
+{
+	__asm {
+		xor eax, eax
+		or edx, edx
+		push ebx
+		je earlyOut3
+		push esi
+		push edi
+	bucketLoop3:
+		mov al, byte ptr [edx + 7]
+		mov esi, dword ptr [edx]
+		mov edi, edx
+		mov edx, esi
+		mov ebx, dword ptr [ecx + eax*4]
+		or esi, esi
+		mov dword ptr [edi], ebx
+		mov dword ptr [ecx + eax*4], edi
+		jne bucketLoop3
+		pop edi
+		pop esi
+	earlyOut3:
+		pop ebx
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 LegoU8 __fastcall BucketCommandsBySortByte2(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command
 )
 {
-	LegoU32 bucketIndex = 0;
-	GolSoftwareRenderer::TriangleCommand* command;
-
-	for (; p_command != NULL; p_buckets[bucketIndex] = command) {
-		bucketIndex = p_command->m_sortKey.m_bytes[2];
-		command = p_command;
-		p_command = p_command->m_next;
-		command->m_next = p_buckets[bucketIndex];
+	LegoU8 byte = 0;
+	while (p_command != NULL) {
+		GolSoftwareRenderer::TriangleCommand* next = p_command->m_next;
+		byte = p_command->m_sortKey.m_bytes[2];
+		p_command->m_next = p_buckets[byte];
+		p_buckets[byte] = p_command;
+		p_command = next;
 	}
-
-	return static_cast<LegoU8>(bucketIndex);
+	return byte;
 }
 
-// FUNCTION: GOLDP 0x10041060
+#else
+
+// FUNCTION: GOLDP 0x10041030
+__declspec(naked) LegoU8 __fastcall BucketCommandsBySortByte2(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command
+)
+{
+	__asm {
+		xor eax, eax
+		or edx, edx
+		push ebx
+		je earlyOut2
+		push esi
+		push edi
+	bucketLoop2:
+		mov al, byte ptr [edx + 6]
+		mov esi, dword ptr [edx]
+		mov edi, edx
+		mov edx, esi
+		mov ebx, dword ptr [ecx + eax*4]
+		or esi, esi
+		mov dword ptr [edi], ebx
+		mov dword ptr [ecx + eax*4], edi
+		jne bucketLoop2
+		pop edi
+		pop esi
+	earlyOut2:
+		pop ebx
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 LegoU8 __fastcall BucketCommandsBySortByte1(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command
 )
 {
-	LegoU32 bucketIndex = 0;
-	GolSoftwareRenderer::TriangleCommand* command;
-
-	for (; p_command != NULL; p_buckets[bucketIndex] = command) {
-		bucketIndex = p_command->m_sortKey.m_bytes[1];
-		command = p_command;
-		p_command = p_command->m_next;
-		command->m_next = p_buckets[bucketIndex];
+	LegoU8 byte = 0;
+	while (p_command != NULL) {
+		GolSoftwareRenderer::TriangleCommand* next = p_command->m_next;
+		byte = p_command->m_sortKey.m_bytes[1];
+		p_command->m_next = p_buckets[byte];
+		p_buckets[byte] = p_command;
+		p_command = next;
 	}
-
-	return static_cast<LegoU8>(bucketIndex);
+	return byte;
 }
 
-// FUNCTION: GOLDP 0x10041090
+#else
+
+// FUNCTION: GOLDP 0x10041060
+__declspec(naked) LegoU8 __fastcall BucketCommandsBySortByte1(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command
+)
+{
+	__asm {
+		xor eax, eax
+		or edx, edx
+		push ebx
+		je earlyOut1
+		push esi
+		push edi
+	bucketLoop1:
+		mov al, byte ptr [edx + 5]
+		mov esi, dword ptr [edx]
+		mov edi, edx
+		mov edx, esi
+		mov ebx, dword ptr [ecx + eax*4]
+		or esi, esi
+		mov dword ptr [edi], ebx
+		mov dword ptr [ecx + eax*4], edi
+		jne bucketLoop1
+		pop edi
+		pop esi
+	earlyOut1:
+		pop ebx
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 LegoU8 __fastcall BucketCommandsBySortByte0(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command
 )
 {
-	LegoU32 bucketIndex = 0;
-	GolSoftwareRenderer::TriangleCommand* command;
-
-	for (; p_command != NULL; p_buckets[bucketIndex] = command) {
-		bucketIndex = p_command->m_sortKey.m_bytes[0];
-		command = p_command;
-		p_command = p_command->m_next;
-		command->m_next = p_buckets[bucketIndex];
+	LegoU8 byte = 0;
+	while (p_command != NULL) {
+		GolSoftwareRenderer::TriangleCommand* next = p_command->m_next;
+		byte = p_command->m_sortKey.m_bytes[0];
+		p_command->m_next = p_buckets[byte];
+		p_buckets[byte] = p_command;
+		p_command = next;
 	}
-
-	return static_cast<LegoU8>(bucketIndex);
+	return byte;
 }
+
+#else
+
+// FUNCTION: GOLDP 0x10041090
+__declspec(naked) LegoU8 __fastcall BucketCommandsBySortByte0(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command
+)
+{
+	__asm {
+		xor eax, eax
+		or edx, edx
+		push ebx
+		je earlyOut
+		push esi
+		push edi
+	bucketLoop:
+		mov al, byte ptr [edx + 4]
+		mov esi, dword ptr [edx]
+		mov edi, edx
+		mov edx, esi
+		mov ebx, dword ptr [ecx + eax*4]
+		or esi, esi
+		mov dword ptr [edi], ebx
+		mov dword ptr [ecx + eax*4], edi
+		jne bucketLoop
+		pop edi
+		pop esi
+	earlyOut:
+		pop ebx
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x100410c0
 void SortCommandListBySortKey(GolSoftwareRenderer::TriangleCommand** p_head)
@@ -569,27 +705,57 @@ void GolSoftwareRenderer::FUN_10041830(LegoS32 p_count, LegoBool p_sort)
 	m_nodes->m_next = NULL;
 }
 
-// FUNCTION: GOLDP 0x10041980
-static LegoS32 __fastcall BucketCommandArrayBySortByte0(
+#ifdef COMPAT_MODE
+
+LegoS32 __fastcall BucketCommandArrayBySortByte0(
 	GolSoftwareRenderer::TriangleCommand** p_buckets,
 	GolSoftwareRenderer::TriangleCommand* p_command,
 	LegoS32 p_count
 )
 {
-	LegoS32 result = p_count;
-	LegoU32 bucketIndex = 0;
-
-	do {
-		bucketIndex = p_command->m_sortKey.m_bytes[0];
+	while (p_count != 0) {
+		LegoU8 byte = p_command->m_sortKey.m_bytes[0];
 		GolSoftwareRenderer::TriangleCommand* command = p_command;
 		p_command--;
-		result--;
-		command->m_next = p_buckets[bucketIndex];
-		p_buckets[bucketIndex] = command;
-	} while (result != 0);
-
-	return result;
+		p_count--;
+		command->m_next = p_buckets[byte];
+		p_buckets[byte] = command;
+	}
+	return 0;
 }
+
+#else
+
+// FUNCTION: GOLDP 0x10041980
+__declspec(naked) LegoS32 __fastcall BucketCommandArrayBySortByte0(
+	GolSoftwareRenderer::TriangleCommand** p_buckets,
+	GolSoftwareRenderer::TriangleCommand* p_command,
+	LegoS32 p_count
+)
+{
+	__asm {
+		mov eax, dword ptr [esp + 4]
+		push ebx
+		push esi
+		push edi
+		xor ebx, ebx
+	bucketArrayLoop:
+		mov bl, byte ptr [edx + 4]
+		mov edi, edx
+		sub edx, 0x14
+		dec eax
+		mov esi, dword ptr [ecx + ebx*4]
+		mov dword ptr [ecx + ebx*4], edi
+		mov dword ptr [edi], esi
+		jne bucketArrayLoop
+		pop edi
+		pop esi
+		pop ebx
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x100419b0
 void GolSoftwareRenderer::DrawCommandList()
