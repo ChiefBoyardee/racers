@@ -628,7 +628,8 @@ LegoBool32 GolMath::MoveToward(
 	return FALSE;
 }
 
-// FUNCTION: LEGORACERS 0x00449b90
+#ifdef COMPAT_MODE
+
 void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3* p_dest)
 {
 	LegoFloat x = p_matrix[2] * p_src.m_z;
@@ -646,6 +647,47 @@ void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3*
 	z += p_matrix[6] * p_src.m_x;
 	p_dest->m_z = z;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00449b90
+__declspec(naked) void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3* p_dest)
+{
+	__asm {
+		mov eax, dword ptr [esp + 10h]
+		mov ecx, dword ptr [esp + 14h]
+		fld dword ptr [eax + 8]
+		fmul dword ptr [esp + 0ch]
+		fld dword ptr [eax + 4]
+		fmul dword ptr [esp + 8]
+		faddp st(1), st(0)
+		fld dword ptr [esp + 4]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fstp dword ptr [ecx]
+		fld dword ptr [eax + 14h]
+		fmul dword ptr [esp + 0ch]
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [esp + 8]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [esp + 4]
+		faddp st(1), st(0)
+		fstp dword ptr [ecx + 4]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [esp + 0ch]
+		fld dword ptr [eax + 1ch]
+		fmul dword ptr [esp + 8]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 18h]
+		fmul dword ptr [esp + 4]
+		faddp st(1), st(0)
+		fstp dword ptr [ecx + 8]
+		ret
+	}
+}
+
+#endif
 
 #ifdef COMPAT_MODE
 
