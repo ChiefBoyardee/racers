@@ -1360,7 +1360,8 @@ LegoFloat RacerPhysics::GetMinTurnRadius()
 	return ComputeMinTurnRadius();
 }
 
-// FUNCTION: LEGORACERS 0x0042ae20
+#ifdef COMPAT_MODE
+
 LegoBool32 RacerPhysics::CanPowerslide()
 {
 	if (m_wallContact) {
@@ -1388,6 +1389,60 @@ LegoBool32 RacerPhysics::CanPowerslide()
 
 	return TRUE;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x0042ae20
+__declspec(naked) LegoBool32 RacerPhysics::CanPowerslide()
+{
+	__asm {
+		mov eax, dword ptr [ecx + 0x3ec]
+		test eax, eax
+		je L_CanPowerslide_0
+		xor eax, eax
+		ret
+	L_CanPowerslide_0:
+		test byte ptr [ecx + 0x6c0], 8
+		jne L_CanPowerslide_1
+		cmp dword ptr [ecx + 0x36c], 3
+		jae L_CanPowerslide_1
+		xor eax, eax
+		ret
+	L_CanPowerslide_1:
+		mov eax, dword ptr [ecx + 0x13c]
+		fld dword ptr [eax + 0x28]
+		fld dword ptr [eax + 0x2c]
+		fld dword ptr [ecx + 0x600]
+		fmul dword ptr [eax + 0x30]
+		fld dword ptr [ecx + 0x5fc]
+		fxch st(2)
+		fmulp st(2), st(0)
+		fxch st(1)
+		faddp st(1), st(0)
+		fxch st(1)
+		fmul dword ptr [ecx + 0x5f8]
+		faddp st(1), st(0)
+		fcomp dword ptr [g_powerslideAlignmentMin]
+		fnstsw ax
+		test ah, 0x41
+		je L_CanPowerslide_2
+		xor eax, eax
+		ret
+	L_CanPowerslide_2:
+		fld dword ptr [ecx + 0x618]
+		fcomp dword ptr [g_powerslideMinSpeed]
+		fnstsw ax
+		test ah, 1
+		je L_CanPowerslide_3
+		xor eax, eax
+		ret
+	L_CanPowerslide_3:
+		mov eax, 1
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x0042aea0
 LegoBool32 RacerPhysics::CanSteer(LegoFloat p_turnRadius)
