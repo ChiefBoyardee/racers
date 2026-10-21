@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <string.h>
 
+extern "C" long _ftol();
+
 DECOMP_SIZE_ASSERT(GolD3DRenderDevice, 0xc8770)
 DECOMP_SIZE_ASSERT(GolD3DRenderDevice::TextureFormat, 0x18)
 DECOMP_SIZE_ASSERT(GolD3DRenderDevice::RasterizerPipelineSet, 0x10)
@@ -2369,9 +2371,8 @@ void GolD3DRenderDevice::ApplyMaterialSw(GolMaterial* p_material)
 		newFlags &= ~(GolMaterial::c_flagAlphaBlend | GolMaterial::c_flagNoTransparency);
 		newFlags |= GolMaterial::c_flagNoAlphaBlend | GolMaterial::c_flagTransparent;
 	}
-	else if (
-		newFlags & (GolMaterial::c_flagAlphaTest | GolMaterial::c_flagAlphaBlend | GolMaterial::c_flagTransparent)
-	) {
+	else if (newFlags &
+			 (GolMaterial::c_flagAlphaTest | GolMaterial::c_flagAlphaBlend | GolMaterial::c_flagTransparent)) {
 		if (newFlags & GolMaterial::c_flagAlphaTest) {
 			m_activeAlphaFunc = p_material->GetAlphaFunc();
 			m_activeAlphaRef = p_material->GetAlphaRef();
@@ -6061,8 +6062,8 @@ void GolD3DRenderDevice::FUN_100106d0(undefined4 p_firstTriangle, undefined4 p_t
 			LegoS32 rasterizerMask = rasterizerMaskBase;
 			LegoU32 rasterizerIndex = 0;
 
-			while (((areaBucket & rasterizerMask) == 0) &
-				   (static_cast<LegoS32>(rasterizerIndex) < maxRasterizerIndex)) {
+			while (((areaBucket & rasterizerMask) == 0) & (static_cast<LegoS32>(rasterizerIndex) < maxRasterizerIndex)
+			) {
 				rasterizerMask >>= 2;
 				rasterizerIndex++;
 			}
@@ -6212,7 +6213,8 @@ void GolD3DRenderDevice::FUN_10011e60(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x10011ed0
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_10011ed0(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6247,7 +6249,132 @@ void GolD3DRenderDevice::FUN_10011ed0(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x10012030
+#else
+
+// FUNCTION: GOLDP 0x10011ed0
+__declspec(naked) void GolD3DRenderDevice::FUN_10011ed0(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x18
+		mov eax, dword ptr [esp + 0x20]
+		push ebx
+		push ebp
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x18], edx
+		lea ebp, [ebx + edi*4]
+		mov edi, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], edi
+		mov edi, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], edi
+		mov edi, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x1c], edi
+		mov edi, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_10011ed0_0
+		shl edi, 8
+		mov dword ptr [esp + 0x20], edi
+	L_10011ed0_7:
+		fld dword ptr [ebp + 8]
+		fmul dword ptr [esi + 0xc864c]
+		fld dword ptr [ebp + 4]
+		fmul dword ptr [esi + 0xc8648]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [ebp]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov edi, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edi, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		mov edx, dword ptr [esp + 0x1c]
+		mov ecx, edx
+		sub ecx, eax
+		mov eax, dword ptr [esp + 0x10]
+		cmp edi, eax
+		fstp st(0)
+		jge L_10011ed0_1
+		mov edi, eax
+	L_10011ed0_1:
+		cmp edi, 0xff
+		jle L_10011ed0_2
+		mov edi, 0xff
+	L_10011ed0_2:
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		jge L_10011ed0_3
+		mov ebx, eax
+	L_10011ed0_3:
+		cmp ebx, 0xff
+		jle L_10011ed0_4
+		mov ebx, 0xff
+	L_10011ed0_4:
+		cmp ecx, edx
+		jge L_10011ed0_5
+		mov ecx, edx
+	L_10011ed0_5:
+		cmp ecx, 0xff
+		jle L_10011ed0_6
+		mov ecx, 0xff
+	L_10011ed0_6:
+		mov edx, dword ptr [esp + 0x20]
+		mov eax, dword ptr [esp + 0x18]
+		or edx, edi
+		add eax, 4
+		shl edx, 8
+		or edx, ebx
+		add ebp, 0xc
+		shl edx, 8
+		or edx, ecx
+		mov ecx, dword ptr [esp + 0x24]
+		mov dword ptr [eax - 4], edx
+		cmp eax, ecx
+		mov dword ptr [esp + 0x18], eax
+		jb L_10011ed0_7
+		mov eax, dword ptr [esp + 0x30]
+	L_10011ed0_0:
+		mov ecx, dword ptr [esp + 0x34]
+		mov edx, dword ptr [esp + 0x2c]
+		push ecx
+		push eax
+		push edx
+		mov ecx, esi
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		add esp, 0x18
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_10012030(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6292,7 +6419,159 @@ void GolD3DRenderDevice::FUN_10012030(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x100121e0
+#else
+
+// FUNCTION: GOLDP 0x10012030
+__declspec(naked) void GolD3DRenderDevice::FUN_10012030(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_10012030_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_10012030_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_10012030_1
+		mov ebx, eax
+	L_10012030_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_10012030_2
+		mov ebx, ecx
+	L_10012030_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_10012030_3
+		mov dword ptr [esp + 0x10], eax
+	L_10012030_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_10012030_4
+		mov dword ptr [esp + 0x10], ecx
+	L_10012030_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_10012030_5
+		mov ebp, eax
+	L_10012030_5:
+		cmp ebp, ecx
+		jle L_10012030_6
+		mov ebp, ecx
+	L_10012030_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_10012030_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_10012030_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_100121e0(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6343,7 +6622,182 @@ void GolD3DRenderDevice::FUN_100121e0(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x100123e0
+#else
+
+// FUNCTION: GOLDP 0x100121e0
+__declspec(naked) void GolD3DRenderDevice::FUN_100121e0(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_100121e0_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_100121e0_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8664]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8660]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc865c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85b4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85b8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85bc]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_100121e0_1
+		mov ebx, eax
+	L_100121e0_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_100121e0_2
+		mov ebx, ecx
+	L_100121e0_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_100121e0_3
+		mov dword ptr [esp + 0x10], eax
+	L_100121e0_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_100121e0_4
+		mov dword ptr [esp + 0x10], ecx
+	L_100121e0_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_100121e0_5
+		mov ebp, eax
+	L_100121e0_5:
+		cmp ebp, ecx
+		jle L_100121e0_6
+		mov ebp, ecx
+	L_100121e0_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_100121e0_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_100121e0_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_100123e0(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6400,7 +6854,205 @@ void GolD3DRenderDevice::FUN_100123e0(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x10012640
+#else
+
+// FUNCTION: GOLDP 0x100123e0
+__declspec(naked) void GolD3DRenderDevice::FUN_100123e0(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_100123e0_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_100123e0_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8664]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8660]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc865c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85b4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85b8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85bc]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8670]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc866c]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8668]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85c0]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85c4]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85c8]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_100123e0_1
+		mov ebx, eax
+	L_100123e0_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_100123e0_2
+		mov ebx, ecx
+	L_100123e0_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_100123e0_3
+		mov dword ptr [esp + 0x10], eax
+	L_100123e0_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_100123e0_4
+		mov dword ptr [esp + 0x10], ecx
+	L_100123e0_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_100123e0_5
+		mov ebp, eax
+	L_100123e0_5:
+		cmp ebp, ecx
+		jle L_100123e0_6
+		mov ebp, ecx
+	L_100123e0_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_100123e0_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_100123e0_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_10012640(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6463,7 +7115,228 @@ void GolD3DRenderDevice::FUN_10012640(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x100128f0
+#else
+
+// FUNCTION: GOLDP 0x10012640
+__declspec(naked) void GolD3DRenderDevice::FUN_10012640(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_10012640_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_10012640_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8664]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8660]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc865c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85b4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85b8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85bc]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8670]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc866c]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8668]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85c0]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85c4]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85c8]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc867c]
+		fld dword ptr [esi + 0xc8678]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8674]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85cc]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d0]
+		sub ebx, eax
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d4]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_10012640_1
+		mov ebx, eax
+	L_10012640_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_10012640_2
+		mov ebx, ecx
+	L_10012640_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_10012640_3
+		mov dword ptr [esp + 0x10], eax
+	L_10012640_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_10012640_4
+		mov dword ptr [esp + 0x10], ecx
+	L_10012640_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_10012640_5
+		mov ebp, eax
+	L_10012640_5:
+		cmp ebp, ecx
+		jle L_10012640_6
+		mov ebp, ecx
+	L_10012640_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_10012640_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_10012640_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_100128f0(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6532,7 +7405,251 @@ void GolD3DRenderDevice::FUN_100128f0(undefined4 p_outputFirst, undefined4 p_fir
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
 
-// FUNCTION: GOLDP 0x10012bf0
+#else
+
+// FUNCTION: GOLDP 0x100128f0
+__declspec(naked) void GolD3DRenderDevice::FUN_100128f0(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_100128f0_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_100128f0_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8664]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8660]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc865c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85b4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85b8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85bc]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8670]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc866c]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8668]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85c0]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85c4]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85c8]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc867c]
+		fld dword ptr [esi + 0xc8678]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8674]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85cc]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d0]
+		sub ebx, eax
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d4]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8684]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8688]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8680]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85d8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85dc]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85e0]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_100128f0_1
+		mov ebx, eax
+	L_100128f0_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_100128f0_2
+		mov ebx, ecx
+	L_100128f0_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_100128f0_3
+		mov dword ptr [esp + 0x10], eax
+	L_100128f0_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_100128f0_4
+		mov dword ptr [esp + 0x10], ecx
+	L_100128f0_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_100128f0_5
+		mov ebp, eax
+	L_100128f0_5:
+		cmp ebp, ecx
+		jle L_100128f0_6
+		mov ebp, ecx
+	L_100128f0_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_100128f0_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_100128f0_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolD3DRenderDevice::FUN_10012bf0(undefined4 p_outputFirst, undefined4 p_firstVertex, undefined4 p_vertexCount)
 {
 	LegoU32 firstVertex = p_firstVertex;
@@ -6606,6 +7723,272 @@ void GolD3DRenderDevice::FUN_10012bf0(undefined4 p_outputFirst, undefined4 p_fir
 
 	(this->*m_drawTriangleFn0)(p_outputFirst, firstVertex, vertexCount);
 }
+
+#else
+
+// FUNCTION: GOLDP 0x10012bf0
+__declspec(naked) void GolD3DRenderDevice::FUN_10012bf0(
+	undefined4 p_outputFirst,
+	undefined4 p_firstVertex,
+	undefined4 p_vertexCount
+)
+{
+	__asm {
+		sub esp, 0x1c
+		mov eax, dword ptr [esp + 0x24]
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov edi, dword ptr [esp + 0x34]
+		mov ecx, dword ptr [esi + 0xc4c14]
+		mov ebx, dword ptr [esi + 0xc4c1c]
+		add edi, eax
+		lea edx, [ecx + eax*4]
+		lea ecx, [ecx + edi*4]
+		lea edi, [eax + eax*2]
+		cmp edx, ecx
+		mov dword ptr [esp + 0x1c], edx
+		lea edi, [ebx + edi*4]
+		mov ebx, dword ptr [esi + 0xc8570]
+		mov dword ptr [esp + 0x10], ebx
+		mov ebx, dword ptr [esi + 0xc8574]
+		mov dword ptr [esp + 0x14], ebx
+		mov ebx, dword ptr [esi + 0xc8578]
+		mov dword ptr [esp + 0x18], ebx
+		mov ebx, dword ptr [esi + 0xc857c]
+		mov dword ptr [esp + 0x24], ecx
+		jae L_10012bf0_0
+		shl ebx, 8
+		push ebp
+		mov dword ptr [esp + 0x24], ebx
+	L_10012bf0_7:
+		fld dword ptr [esi + 0xc864c]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8648]
+		fmul dword ptr [edi + 4]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8644]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc859c]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85a0]
+		mov ebx, dword ptr [esp + 0x14]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85a4]
+		mov ecx, dword ptr [esp + 0x18]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8654]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8658]
+		mov ebp, dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8650]
+		fmul dword ptr [edi]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85a8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85ac]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85b0]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8664]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8660]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc865c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85b4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85b8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85bc]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8670]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc866c]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8668]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85c0]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85c4]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85c8]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc867c]
+		fld dword ptr [esi + 0xc8678]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8674]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85cc]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d0]
+		sub ebx, eax
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85d4]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8684]
+		fmul dword ptr [edi + 4]
+		fld dword ptr [edi + 8]
+		fmul dword ptr [esi + 0xc8688]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc8680]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85d8]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85dc]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85e0]
+		mov edx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub edx, eax
+		mov dword ptr [esp + 0x10], edx
+		call _ftol
+		fstp st(0)
+		fld dword ptr [esi + 0xc8694]
+		fmul dword ptr [edi + 8]
+		fld dword ptr [esi + 0xc8690]
+		fmul dword ptr [edi + 4]
+		sub ebp, eax
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc868c]
+		fmul dword ptr [edi]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0xc85e4]
+		fmul st(0), st(1)
+		call _ftol
+		fld dword ptr [esi + 0xc85e8]
+		fmul st(0), st(1)
+		sub ebx, eax
+		call _ftol
+		fld dword ptr [esi + 0xc85ec]
+		mov ecx, dword ptr [esp + 0x10]
+		fmul st(0), st(1)
+		sub ecx, eax
+		mov dword ptr [esp + 0x10], ecx
+		call _ftol
+		sub ebp, eax
+		mov eax, dword ptr [esp + 0x14]
+		cmp ebx, eax
+		fstp st(0)
+		jge L_10012bf0_1
+		mov ebx, eax
+	L_10012bf0_1:
+		mov ecx, 0xff
+		cmp ebx, ecx
+		jle L_10012bf0_2
+		mov ebx, ecx
+	L_10012bf0_2:
+		mov eax, dword ptr [esp + 0x18]
+		mov edx, dword ptr [esp + 0x10]
+		cmp edx, eax
+		jge L_10012bf0_3
+		mov dword ptr [esp + 0x10], eax
+	L_10012bf0_3:
+		cmp dword ptr [esp + 0x10], ecx
+		jle L_10012bf0_4
+		mov dword ptr [esp + 0x10], ecx
+	L_10012bf0_4:
+		mov eax, dword ptr [esp + 0x1c]
+		cmp ebp, eax
+		jge L_10012bf0_5
+		mov ebp, eax
+	L_10012bf0_5:
+		cmp ebp, ecx
+		jle L_10012bf0_6
+		mov ebp, ecx
+	L_10012bf0_6:
+		mov ecx, dword ptr [esp + 0x24]
+		mov eax, dword ptr [esp + 0x20]
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		shl ecx, 8
+		or ecx, ebx
+		add eax, 4
+		shl ecx, 8
+		or ecx, ebp
+		add edi, 0xc
+		mov dword ptr [eax - 4], ecx
+		mov ecx, dword ptr [esp + 0x28]
+		cmp eax, ecx
+		mov dword ptr [esp + 0x20], eax
+		jb L_10012bf0_7
+		mov eax, dword ptr [esp + 0x34]
+		pop ebp
+	L_10012bf0_0:
+		mov edx, dword ptr [esp + 0x34]
+		mov ecx, esi
+		push edx
+		push eax
+		mov eax, dword ptr [esp + 0x34]
+		push eax
+		call dword ptr [esi + 0xc8760]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret 0xc
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x10012f50
 void GolD3DRenderDevice::FUN_10012f50()
