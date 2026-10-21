@@ -1,5 +1,7 @@
 #include "audio/audiohelpers.h"
 
+#include "compat.h"
+
 // GLOBAL: LEGORACERS 0x004be640
 LegoS32 g_adpcmIndexAdjust[16] = {-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8};
 
