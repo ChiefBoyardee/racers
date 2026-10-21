@@ -260,9 +260,9 @@ void RaceState::CreateRacer(
 			static_cast<DriverCosmeticTable::Entry*>(m_driverTable.GetName(p_slot->m_driverName));
 
 		initParams.m_driverEntity = m_driverTable.LoadEntry(p_slot->m_driverName);
-		championDefinition =
-			static_cast<ChampionDefinitionList::ChampionDefinition*>(m_championList.GetName(driverEntry->m_championName)
-			);
+		championDefinition = static_cast<ChampionDefinitionList::ChampionDefinition*>(
+			m_championList.GetName(driverEntry->m_championName)
+		);
 		initParams.m_bodyModel = m_championList.CreateChampionModel(driverEntry->m_championName);
 		chassisItem = static_cast<ChassisModelTable::Item*>(m_chassisTable.GetName(championDefinition->m_chassisName));
 		m_chassisTable.InstantiateModels(chassisItem, &initParams.m_carEntity, &initParams.m_secondaryModel);
