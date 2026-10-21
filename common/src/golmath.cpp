@@ -615,66 +615,39 @@ LegoBool32 GolMath::MoveToward(
 	return FALSE;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x00449b90
 void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3* p_dest)
 {
-	LegoFloat x = p_matrix[2] * p_src.m_z;
-	x += p_matrix[1] * p_src.m_y;
-	x += p_src.m_x * p_matrix[0];
+	LegoFloat term = p_matrix[1];
+	term *= p_src.m_y;
+	LegoFloat x = p_matrix[2];
+	x *= p_src.m_z;
+	x += term;
+	term = p_src.m_x;
+	term *= p_matrix[0];
+	x += term;
 	p_dest->m_x = x;
 
-	LegoFloat y = p_matrix[5] * p_src.m_z;
-	y += p_matrix[4] * p_src.m_y;
-	y += p_matrix[3] * p_src.m_x;
+	term = p_matrix[4];
+	term *= p_src.m_y;
+	LegoFloat y = p_matrix[5];
+	y *= p_src.m_z;
+	y += term;
+	term = p_matrix[3];
+	term *= p_src.m_x;
+	y += term;
 	p_dest->m_y = y;
 
-	LegoFloat z = p_matrix[8] * p_src.m_z;
-	z += p_matrix[7] * p_src.m_y;
-	z += p_matrix[6] * p_src.m_x;
+	term = p_matrix[7];
+	term *= p_src.m_y;
+	LegoFloat z = p_matrix[8];
+	z *= p_src.m_z;
+	z += term;
+	term = p_matrix[6];
+	term *= p_src.m_x;
+	z += term;
 	p_dest->m_z = z;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x00449b90
-__declspec(naked) void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3* p_dest)
-{
-	__asm {
-		mov eax, dword ptr [esp + 10h]
-		mov ecx, dword ptr [esp + 14h]
-		fld dword ptr [eax + 8]
-		fmul dword ptr [esp + 0ch]
-		fld dword ptr [eax + 4]
-		fmul dword ptr [esp + 8]
-		faddp st(1), st(0)
-		fld dword ptr [esp + 4]
-		fmul dword ptr [eax]
-		faddp st(1), st(0)
-		fstp dword ptr [ecx]
-		fld dword ptr [eax + 14h]
-		fmul dword ptr [esp + 0ch]
-		fld dword ptr [eax + 10h]
-		fmul dword ptr [esp + 8]
-		faddp st(1), st(0)
-		fld dword ptr [eax + 0ch]
-		fmul dword ptr [esp + 4]
-		faddp st(1), st(0)
-		fstp dword ptr [ecx + 4]
-		fld dword ptr [eax + 20h]
-		fmul dword ptr [esp + 0ch]
-		fld dword ptr [eax + 1ch]
-		fmul dword ptr [esp + 8]
-		faddp st(1), st(0)
-		fld dword ptr [eax + 18h]
-		fmul dword ptr [esp + 4]
-		faddp st(1), st(0)
-		fstp dword ptr [ecx + 8]
-		ret
-	}
-}
-
-#endif
 
 #ifdef COMPAT_MODE
 
