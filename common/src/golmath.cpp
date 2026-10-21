@@ -62,31 +62,18 @@ void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& 
 	}
 }
 
-#ifdef COMPAT_MODE
-
-void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
-{
-	*p_sin = static_cast<LegoFloat>(sin(p_angle));
-	*p_cos = static_cast<LegoFloat>(cos(p_angle));
-}
-
-#else
-
 // FUNCTION: LEGORACERS 0x00449170
-__declspec(naked) void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
+void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
 {
 	__asm {
 		fld dword ptr [esp + 4]
 		fsincos
-		mov ecx, dword ptr [esp + 0ch]
+		mov ecx, dword ptr [esp + 0xc]
 		mov edx, dword ptr [esp + 8]
 		fstp dword ptr [ecx]
 		fstp dword ptr [edx]
-		ret
 	}
 }
-
-#endif
 
 #ifdef COMPAT_MODE
 
