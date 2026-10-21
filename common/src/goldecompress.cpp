@@ -1,5 +1,7 @@
 #include "goldecompress.h"
 
+#include "compat.h"
+
 #ifdef COMPAT_MODE
 
 LegoU32 GolDecompress(LegoU8* p_src, LegoU8* p_dst)
