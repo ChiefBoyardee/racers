@@ -886,8 +886,8 @@ void GolImgFile::ConvertRowIndexed4To16(const LegoU8* p_src, LegoU16* p_dst)
 	}
 }
 
-// FUNCTION: GOLDP 0x100219e0
-// FUNCTION: LEGORACERS 0x0040c400
+#ifdef COMPAT_MODE
+
 void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 {
 	LegoU32 i = 1;
@@ -986,6 +986,393 @@ void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 		}
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x100219e0
+// FUNCTION: LEGORACERS 0x0040c400
+__declspec(naked) void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
+{
+	__asm {
+		sub esp, 8
+		mov eax, ecx
+		push ebx
+		xor ecx, ecx
+		push ebp
+		mov edx, dword ptr [eax + 0x98]
+		push esi
+		cmp edx, ecx
+		mov edx, dword ptr [eax + 0x44]
+		mov dword ptr [esp + 0xc], ecx
+		push edi
+		mov ecx, 1
+		je L_ConvertRowIndexed4To24_0
+		cmp edx, ecx
+		jbe L_ConvertRowIndexed4To24_1
+		mov edx, dword ptr [esp + 0x20]
+		mov dword ptr [esp + 0x14], ecx
+	L_ConvertRowIndexed4To24_6:
+		mov esi, dword ptr [esp + 0x1c]
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		shr ecx, 4
+		lea esi, [eax + ecx*4 + 0xa8]
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 1]
+		mov ebp, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebp, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 2]
+		mov esi, ecx
+		mov cl, byte ptr [eax + 0x80]
+		shr esi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9c]
+		cmp edi, ecx
+		jne L_ConvertRowIndexed4To24_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9d]
+		cmp ebp, ecx
+		jne L_ConvertRowIndexed4To24_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9e]
+		cmp esi, ecx
+		jne L_ConvertRowIndexed4To24_2
+		mov cl, byte ptr [eax + 0xa4]
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [eax + 0xa4]
+		inc edx
+		shr ecx, 8
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [eax + 0xa4]
+		inc edx
+		jmp L_ConvertRowIndexed4To24_3
+	L_ConvertRowIndexed4To24_2:
+		mov ecx, dword ptr [eax + 0x90]
+		shl esi, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebp, cl
+		mov ecx, dword ptr [eax + 0x88]
+		shl edi, cl
+		or esi, ebp
+		or esi, edi
+		mov edi, dword ptr [eax + 0x74]
+		or esi, edi
+		inc edx
+		mov ecx, esi
+		mov byte ptr [edx - 1], cl
+		mov ebx, ecx
+		shr ebx, 8
+		mov byte ptr [edx], bl
+		inc edx
+	L_ConvertRowIndexed4To24_3:
+		mov esi, dword ptr [esp + 0x1c]
+		shr ecx, 0x10
+		mov byte ptr [edx], cl
+		mov cl, byte ptr [esi]
+		and cl, 0xf
+		inc edx
+		mov byte ptr [esp + 0x20], cl
+		inc esi
+		mov ecx, dword ptr [esp + 0x20]
+		mov dword ptr [esp + 0x1c], esi
+		and ecx, 0xff
+		lea esi, [eax + ecx*4 + 0xa8]
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 1]
+		mov ebp, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebp, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 2]
+		mov esi, ecx
+		mov cl, byte ptr [eax + 0x80]
+		shr esi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9c]
+		cmp edi, ecx
+		jne L_ConvertRowIndexed4To24_4
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9d]
+		cmp ebp, ecx
+		jne L_ConvertRowIndexed4To24_4
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9e]
+		cmp esi, ecx
+		jne L_ConvertRowIndexed4To24_4
+		mov cl, byte ptr [eax + 0xa4]
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [eax + 0xa4]
+		inc edx
+		shr ecx, 8
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [eax + 0xa4]
+		inc edx
+		jmp L_ConvertRowIndexed4To24_5
+	L_ConvertRowIndexed4To24_4:
+		mov ecx, dword ptr [eax + 0x90]
+		shl esi, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebp, cl
+		mov ecx, dword ptr [eax + 0x88]
+		shl edi, cl
+		or esi, ebp
+		or esi, edi
+		mov edi, dword ptr [eax + 0x74]
+		or esi, edi
+		inc edx
+		mov ecx, esi
+		mov byte ptr [edx - 1], cl
+		mov ebx, ecx
+		shr ebx, 8
+		mov byte ptr [edx], bl
+		inc edx
+	L_ConvertRowIndexed4To24_5:
+		mov ebx, dword ptr [esp + 0x10]
+		shr ecx, 0x10
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [esp + 0x14]
+		mov esi, dword ptr [eax + 0x44]
+		add ecx, 2
+		inc edx
+		add ebx, 2
+		cmp ecx, esi
+		mov dword ptr [esp + 0x10], ebx
+		mov dword ptr [esp + 0x14], ecx
+		jb L_ConvertRowIndexed4To24_6
+		jmp L_ConvertRowIndexed4To24_7
+	L_ConvertRowIndexed4To24_1:
+		mov edx, dword ptr [esp + 0x20]
+	L_ConvertRowIndexed4To24_7:
+		mov ecx, dword ptr [esp + 0x10]
+		mov esi, dword ptr [eax + 0x44]
+		cmp ecx, esi
+		jae L_ConvertRowIndexed4To24_8
+		mov esi, dword ptr [esp + 0x1c]
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		shr ecx, 4
+		lea esi, [eax + ecx*4 + 0xa8]
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 1]
+		mov ebp, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebp, cl
+		xor ecx, ecx
+		mov cl, byte ptr [esi + 2]
+		mov esi, ecx
+		mov cl, byte ptr [eax + 0x80]
+		shr esi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9c]
+		cmp edi, ecx
+		jne L_ConvertRowIndexed4To24_9
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9d]
+		cmp ebp, ecx
+		jne L_ConvertRowIndexed4To24_9
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9e]
+		cmp esi, ecx
+		jne L_ConvertRowIndexed4To24_9
+		mov cl, byte ptr [eax + 0xa4]
+		pop edi
+		mov byte ptr [edx], cl
+		mov ecx, dword ptr [eax + 0xa4]
+		inc edx
+		pop esi
+		shr ecx, 8
+		mov byte ptr [edx], cl
+		mov eax, dword ptr [eax + 0xa4]
+		shr eax, 0x10
+		pop ebp
+		mov byte ptr [edx + 1], al
+		pop ebx
+		add esp, 8
+		ret 8
+	L_ConvertRowIndexed4To24_9:
+		mov ecx, dword ptr [eax + 0x90]
+		mov ebx, dword ptr [eax + 0x74]
+		shl esi, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebp, cl
+		mov ecx, dword ptr [eax + 0x88]
+		shl edi, cl
+		or esi, ebp
+		or esi, edi
+		pop edi
+		or esi, ebx
+		inc edx
+		mov eax, esi
+		pop esi
+		mov byte ptr [edx - 1], al
+		mov ecx, eax
+		shr ecx, 8
+		shr eax, 0x10
+		mov byte ptr [edx], cl
+		pop ebp
+		mov byte ptr [edx + 1], al
+		pop ebx
+		add esp, 8
+		ret 8
+	L_ConvertRowIndexed4To24_0:
+		cmp edx, ecx
+		jbe L_ConvertRowIndexed4To24_10
+		mov esi, dword ptr [esp + 0x20]
+		mov ebp, dword ptr [esp + 0x1c]
+		mov dword ptr [esp + 0x14], ecx
+	L_ConvertRowIndexed4To24_11:
+		xor edx, edx
+		mov cl, byte ptr [eax + 0x80]
+		mov dl, byte ptr [ebp]
+		shr edx, 4
+		lea edi, [eax + edx*4 + 0xa8]
+		xor edx, edx
+		mov dl, byte ptr [edi + 2]
+		shr edx, cl
+		mov ecx, dword ptr [eax + 0x90]
+		shl edx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi + 1]
+		mov ebx, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		mov ecx, dword ptr [eax + 0x88]
+		or edx, ebx
+		shl edi, cl
+		or edx, edi
+		mov byte ptr [esi], dl
+		mov ecx, edx
+		inc esi
+		shr ecx, 8
+		mov byte ptr [esi], cl
+		inc esi
+		shr edx, 0x10
+		mov byte ptr [esi], dl
+		mov dl, byte ptr [ebp]
+		and dl, 0xf
+		inc esi
+		mov byte ptr [esp + 0x20], dl
+		xor edx, edx
+		mov ecx, dword ptr [esp + 0x20]
+		inc ebp
+		and ecx, 0xff
+		mov dl, byte ptr [eax + ecx*4 + 0xaa]
+		lea edi, [eax + ecx*4 + 0xa8]
+		mov cl, byte ptr [eax + 0x80]
+		shr edx, cl
+		mov ecx, dword ptr [eax + 0x90]
+		shl edx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi + 1]
+		mov ebx, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		mov ecx, dword ptr [eax + 0x88]
+		or edx, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		add ebx, 2
+		shl edi, cl
+		mov dword ptr [esp + 0x10], ebx
+		or edx, edi
+		mov byte ptr [esi], dl
+		mov ecx, edx
+		inc esi
+		shr ecx, 8
+		mov byte ptr [esi], cl
+		mov ecx, dword ptr [esp + 0x14]
+		inc esi
+		add ecx, 2
+		shr edx, 0x10
+		mov byte ptr [esi], dl
+		mov edx, dword ptr [eax + 0x44]
+		inc esi
+		mov dword ptr [esp + 0x14], ecx
+		cmp ecx, edx
+		jb L_ConvertRowIndexed4To24_11
+		jmp L_ConvertRowIndexed4To24_12
+	L_ConvertRowIndexed4To24_10:
+		mov esi, dword ptr [esp + 0x20]
+		mov ebp, dword ptr [esp + 0x1c]
+	L_ConvertRowIndexed4To24_12:
+		mov edx, dword ptr [esp + 0x10]
+		mov ecx, dword ptr [eax + 0x44]
+		cmp edx, ecx
+		jae L_ConvertRowIndexed4To24_8
+		xor ecx, ecx
+		xor edx, edx
+		mov cl, byte ptr [ebp]
+		shr ecx, 4
+		mov dl, byte ptr [eax + ecx*4 + 0xaa]
+		lea edi, [eax + ecx*4 + 0xa8]
+		mov cl, byte ptr [eax + 0x80]
+		shr edx, cl
+		mov ecx, dword ptr [eax + 0x90]
+		shl edx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi + 1]
+		mov ebx, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edi]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edi, cl
+		mov ecx, dword ptr [eax + 0x88]
+		or edx, ebx
+		shl edi, cl
+		or edx, edi
+		mov byte ptr [esi], dl
+		mov eax, edx
+		inc esi
+		shr eax, 8
+		shr edx, 0x10
+		mov byte ptr [esi], al
+		mov byte ptr [esi + 1], dl
+	L_ConvertRowIndexed4To24_8:
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		add esp, 8
+		ret 8
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x10021e10
 // FUNCTION: LEGORACERS 0x0040c830
@@ -1167,8 +1554,8 @@ void GolImgFile::ConvertRowIndexed8To24(const LegoU8* p_src, LegoU8* p_dst)
 	}
 }
 
-// FUNCTION: GOLDP 0x10022560
-// FUNCTION: LEGORACERS 0x0040cf80
+#ifdef COMPAT_MODE
+
 void GolImgFile::ConvertRowIndexed8To32(const LegoU8* p_src, LegoU32* p_dst)
 {
 	LegoU32* endDst = p_dst + m_width;
@@ -1208,6 +1595,132 @@ void GolImgFile::ConvertRowIndexed8To32(const LegoU8* p_src, LegoU32* p_dst)
 	}
 }
 
+#else
+
+// FUNCTION: GOLDP 0x10022560
+// FUNCTION: LEGORACERS 0x0040cf80
+__declspec(naked) void GolImgFile::ConvertRowIndexed8To32(const LegoU8* p_src, LegoU32* p_dst)
+{
+	__asm {
+		mov eax, ecx
+		push ebx
+		push ebp
+		mov ebp, dword ptr [esp + 0x10]
+		mov ecx, dword ptr [eax + 0x44]
+		mov edx, dword ptr [eax + 0x98]
+		push esi
+		push edi
+		lea ecx, [ebp + ecx*4]
+		test edx, edx
+		mov dword ptr [esp + 0x18], ecx
+		je L_ConvertRowIndexed8To32_0
+		cmp ebp, ecx
+		jae L_ConvertRowIndexed8To32_1
+		mov ebx, dword ptr [esp + 0x14]
+	L_ConvertRowIndexed8To32_4:
+		xor edx, edx
+		xor ecx, ecx
+		mov dl, byte ptr [ebx]
+		inc ebx
+		mov cl, byte ptr [eax + edx*4 + 0xa8]
+		lea edx, [eax + edx*4 + 0xa8]
+		mov esi, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr esi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edx + 1]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr edi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edx + 2]
+		mov edx, ecx
+		mov cl, byte ptr [eax + 0x80]
+		shr edx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9c]
+		cmp esi, ecx
+		jne L_ConvertRowIndexed8To32_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9d]
+		cmp edi, ecx
+		jne L_ConvertRowIndexed8To32_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9e]
+		cmp edx, ecx
+		jne L_ConvertRowIndexed8To32_2
+		mov edx, dword ptr [eax + 0xa4]
+		jmp L_ConvertRowIndexed8To32_3
+	L_ConvertRowIndexed8To32_2:
+		mov ecx, dword ptr [eax + 0x90]
+		shl edx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl edi, cl
+		mov ecx, dword ptr [eax + 0x88]
+		shl esi, cl
+		or edx, edi
+		or edx, esi
+		mov esi, dword ptr [eax + 0x74]
+		or edx, esi
+	L_ConvertRowIndexed8To32_3:
+		mov ecx, dword ptr [esp + 0x18]
+		mov dword ptr [ebp], edx
+		add ebp, 4
+		cmp ebp, ecx
+		jb L_ConvertRowIndexed8To32_4
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		ret 8
+	L_ConvertRowIndexed8To32_0:
+		cmp ebp, ecx
+		jae L_ConvertRowIndexed8To32_1
+		mov esi, dword ptr [esp + 0x14]
+	L_ConvertRowIndexed8To32_5:
+		xor ecx, ecx
+		add ebp, 4
+		mov cl, byte ptr [esi]
+		inc esi
+		lea edx, [eax + ecx*4 + 0xa8]
+		xor ecx, ecx
+		mov cl, byte ptr [edx + 2]
+		mov edi, ecx
+		mov cl, byte ptr [eax + 0x80]
+		shr edi, cl
+		mov ecx, dword ptr [eax + 0x90]
+		shl edi, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edx + 1]
+		mov ebx, ecx
+		mov cl, byte ptr [eax + 0x7c]
+		shr ebx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shl ebx, cl
+		xor ecx, ecx
+		mov cl, byte ptr [edx]
+		mov edx, ecx
+		mov cl, byte ptr [eax + 0x78]
+		shr edx, cl
+		mov ecx, dword ptr [eax + 0x88]
+		or edi, ebx
+		shl edx, cl
+		mov ecx, dword ptr [esp + 0x18]
+		or edi, edx
+		cmp ebp, ecx
+		mov dword ptr [ebp - 4], edi
+		jb L_ConvertRowIndexed8To32_5
+	L_ConvertRowIndexed8To32_1:
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		ret 8
+	}
+}
+
+#endif
+
 // FUNCTION: GOLDP 0x100226a0
 // FUNCTION: LEGORACERS 0x0040d0c0
 const LegoChar* GolImgFile::GetSuffix()
@@ -1220,7 +1733,8 @@ void GolImgFile::LoadSurfaceFromBuffer(LegoU8*, GolSurface*, LegoU32, ColorRGBA*
 	// empty
 }
 
-// FUNCTION: GOLDP 0x100226c0
+#ifdef COMPAT_MODE
+
 void GolImgFile::SetImageInfo(
 	const GolSurfaceFormat& p_format,
 	LegoU32 p_width,
@@ -1246,6 +1760,63 @@ void GolImgFile::SetImageInfo(
 		::memcpy(m_palette, p_paletteColors, p_paletteSize * sizeof(*p_paletteColors));
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x100226c0
+__declspec(naked) void GolImgFile::SetImageInfo(
+	const GolSurfaceFormat& p_format,
+	LegoU32 p_width,
+	LegoU32 p_height,
+	LegoU32 p_rowByteStride,
+	ColorRGBA* p_paletteColors,
+	LegoU32 p_paletteSize
+)
+{
+	__asm {
+		push ebx
+		mov ebx, ecx
+		push esi
+		push edi
+		test byte ptr [ebx + 0x1c], 1
+		je L_SetImageInfo_0
+		mov eax, dword ptr [ebx]
+		call dword ptr [eax + 0xc]
+	L_SetImageInfo_0:
+		mov esi, dword ptr [esp + 0x10]
+		mov edx, dword ptr [esp + 0x18]
+		mov eax, dword ptr [esp + 0x1c]
+		lea edi, [ebx + 0x50]
+		mov ecx, 6
+		rep movsd
+		mov ecx, dword ptr [esp + 0x14]
+		mov esi, dword ptr [esp + 0x20]
+		mov dword ptr [ebx + 0x44], ecx
+		mov dword ptr [ebx + 0x48], edx
+		mov dword ptr [ebx + 0x4c], eax
+		mov cl, byte ptr [ebx + 0x66]
+		mov edx, 1
+		xor eax, eax
+		shl edx, cl
+		cmp esi, eax
+		mov dword ptr [ebx + 0x5a8], eax
+		mov dword ptr [ebx + 0x5ac], eax
+		mov dword ptr [ebx + 0x6c], edx
+		je L_SetImageInfo_1
+		mov ecx, dword ptr [esp + 0x24]
+		cmp ecx, eax
+		je L_SetImageInfo_1
+		lea edi, [ebx + 0xa8]
+		rep movsd
+	L_SetImageInfo_1:
+		pop edi
+		pop esi
+		pop ebx
+		ret 0x18
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x10022730
 void GolImgFile::ConvertImage(
@@ -1458,7 +2029,8 @@ void GolImgFile::UpscaleRow(LegoU8* p_row, LegoS32 p_xScale, LegoU32 p_scaledWid
 	}
 }
 
-// FUNCTION: GOLDP 0x10022b80
+#ifdef COMPAT_MODE
+
 void GolImgFile::DownsampleRowPair(LegoU8* p_top, LegoU8* p_bottom, LegoU8* p_dst)
 {
 	LegoU8* end = p_dst + (m_width >> 1) * sizeof(LegoU16);
@@ -1550,6 +2122,398 @@ void GolImgFile::DownsampleRowPair(LegoU8* p_top, LegoU8* p_bottom, LegoU8* p_ds
 		}
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x10022b80
+__declspec(naked) void GolImgFile::DownsampleRowPair(LegoU8* p_top, LegoU8* p_bottom, LegoU8* p_dst)
+{
+	__asm {
+		sub esp, 0x24
+		mov eax, ecx
+		push ebx
+		mov ecx, dword ptr [esp + 0x34]
+		push ebp
+		mov edx, dword ptr [eax + 0x44]
+		push esi
+		mov esi, dword ptr [eax + 0x98]
+		push edi
+		shr edx, 1
+		test esi, esi
+		lea edx, [ecx + edx*2]
+		mov dword ptr [esp + 0x1c], edx
+		je L_DownsampleRowPair_0
+		cmp ecx, edx
+		jae L_DownsampleRowPair_1
+		mov esi, dword ptr [esp + 0x3c]
+		mov edx, dword ptr [esp + 0x38]
+	L_DownsampleRowPair_8:
+		mov ebp, dword ptr [eax + 0x70]
+		xor ecx, ecx
+		mov cl, byte ptr [edx]
+		mov edi, ebp
+		and edi, 1
+		xor ebx, ebx
+		mov dword ptr [esp + 0x3c], edi
+		add edx, edi
+		mov edi, ebp
+		mov dword ptr [esp + 0x38], ebp
+		mov bh, byte ptr [edx]
+		shr edi, 1
+		and edi, 1
+		or ecx, ebx
+		add edx, edi
+		xor ebx, ebx
+		shr ebp, 2
+		mov bl, byte ptr [edx]
+		and ebp, 1
+		shl ebx, 0x10
+		or ecx, ebx
+		add edx, ebp
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x24], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		shr ecx, 3
+		and ecx, 1
+		mov dword ptr [esp + 0x38], ecx
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [edx]
+		add edx, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [edx]
+		add edx, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		add edx, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x28], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		add esi, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [esi]
+		add esi, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		add esi, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x2c], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add esi, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		add esi, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [esi]
+		add esi, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		add esi, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov dword ptr [esp + 0x30], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add esi, ecx
+		xor ecx, ecx
+		mov dword ptr [esp + 0x38], ecx
+		mov dword ptr [esp + 0x3c], ecx
+		mov dword ptr [esp + 0x10], ecx
+		mov dword ptr [esp + 0x18], ecx
+		mov cl, byte ptr [eax + 0x9c]
+		mov dword ptr [esp + 0x20], ecx
+		lea ecx, [esp + 0x24]
+		mov dword ptr [esp + 0x14], ecx
+	L_DownsampleRowPair_4:
+		mov ecx, dword ptr [esp + 0x14]
+		mov edi, dword ptr [ecx]
+		mov ecx, dword ptr [eax + 0x50]
+		mov ebp, edi
+		mov ebx, edi
+		and ebp, ecx
+		mov ecx, dword ptr [eax + 0x78]
+		shr ebp, cl
+		mov ecx, dword ptr [eax + 0x54]
+		and ebx, ecx
+		mov ecx, dword ptr [eax + 0x7c]
+		shr ebx, cl
+		mov ecx, dword ptr [eax + 0x58]
+		and edi, ecx
+		mov ecx, dword ptr [eax + 0x80]
+		shr edi, cl
+		cmp ebp, dword ptr [esp + 0x20]
+		jne L_DownsampleRowPair_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9d]
+		cmp ebx, ecx
+		jne L_DownsampleRowPair_2
+		xor ecx, ecx
+		mov cl, byte ptr [eax + 0x9e]
+		cmp edi, ecx
+		je L_DownsampleRowPair_3
+	L_DownsampleRowPair_2:
+		mov ecx, dword ptr [esp + 0x38]
+		add ecx, ebp
+		mov ebp, dword ptr [esp + 0x3c]
+		add ebp, ebx
+		mov ebx, dword ptr [esp + 0x10]
+		mov dword ptr [esp + 0x38], ecx
+		mov ecx, dword ptr [esp + 0x18]
+		add ebx, edi
+		mov edi, dword ptr [esp + 0x14]
+		inc ecx
+		add edi, 4
+		cmp ecx, 4
+		mov dword ptr [esp + 0x3c], ebp
+		mov dword ptr [esp + 0x10], ebx
+		mov dword ptr [esp + 0x18], ecx
+		mov dword ptr [esp + 0x14], edi
+		jb L_DownsampleRowPair_4
+		jmp L_DownsampleRowPair_5
+	L_DownsampleRowPair_3:
+		cmp dword ptr [esp + 0x18], 4
+		jae L_DownsampleRowPair_6
+		mov ecx, dword ptr [esp + 0x40]
+		mov di, word ptr [eax + 0xa4]
+		mov word ptr [ecx], di
+		jmp L_DownsampleRowPair_7
+	L_DownsampleRowPair_6:
+		mov ebx, dword ptr [esp + 0x10]
+		mov ebp, dword ptr [esp + 0x3c]
+	L_DownsampleRowPair_5:
+		mov ecx, dword ptr [eax + 0x90]
+		mov edi, dword ptr [esp + 0x38]
+		shr ebx, 2
+		shl ebx, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shr ebp, 2
+		shl ebp, cl
+		mov ecx, dword ptr [eax + 0x88]
+		shr edi, 2
+		shl edi, cl
+		mov ecx, dword ptr [esp + 0x40]
+		or ebx, ebp
+		mov ebp, dword ptr [eax + 0x74]
+		or ebx, edi
+		or ebx, ebp
+		mov word ptr [ecx], bx
+	L_DownsampleRowPair_7:
+		mov edi, dword ptr [esp + 0x1c]
+		add ecx, 2
+		cmp ecx, edi
+		mov dword ptr [esp + 0x40], ecx
+		jb L_DownsampleRowPair_8
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		add esp, 0x24
+		ret 0xc
+	L_DownsampleRowPair_0:
+		cmp ecx, edx
+		jae L_DownsampleRowPair_1
+		mov esi, dword ptr [esp + 0x3c]
+		mov edx, dword ptr [esp + 0x38]
+	L_DownsampleRowPair_10:
+		mov ebp, dword ptr [eax + 0x70]
+		xor ecx, ecx
+		mov cl, byte ptr [edx]
+		mov edi, ebp
+		and edi, 1
+		xor ebx, ebx
+		mov dword ptr [esp + 0x3c], edi
+		add edx, edi
+		mov edi, ebp
+		mov dword ptr [esp + 0x38], ebp
+		mov bh, byte ptr [edx]
+		shr edi, 1
+		and edi, 1
+		or ecx, ebx
+		add edx, edi
+		xor ebx, ebx
+		shr ebp, 2
+		mov bl, byte ptr [edx]
+		and ebp, 1
+		shl ebx, 0x10
+		or ecx, ebx
+		add edx, ebp
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x24], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		shr ecx, 3
+		and ecx, 1
+		mov dword ptr [esp + 0x38], ecx
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [edx]
+		add edx, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [edx]
+		add edx, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		add edx, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [edx]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x28], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		add esi, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [esi]
+		add esi, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		add esi, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		shl ebx, 0x18
+		or ecx, ebx
+		mov ebx, dword ptr [esp + 0x3c]
+		mov dword ptr [esp + 0x2c], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add esi, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [esi]
+		add esi, ebx
+		xor ebx, ebx
+		mov bh, byte ptr [esi]
+		add esi, edi
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		add esi, ebp
+		shl ebx, 0x10
+		or ecx, ebx
+		xor ebx, ebx
+		mov bl, byte ptr [esi]
+		mov dword ptr [esp + 0x14], 4
+		shl ebx, 0x18
+		or ecx, ebx
+		mov dword ptr [esp + 0x30], ecx
+		mov ecx, dword ptr [esp + 0x38]
+		add esi, ecx
+		xor ebx, ebx
+		lea ecx, [esp + 0x24]
+		mov dword ptr [esp + 0x38], ebx
+		mov dword ptr [esp + 0x3c], ebx
+		mov dword ptr [esp + 0x10], ebx
+		mov dword ptr [esp + 0x18], ecx
+	L_DownsampleRowPair_9:
+		mov ecx, dword ptr [esp + 0x18]
+		mov edi, dword ptr [ecx]
+		mov ecx, dword ptr [eax + 0x50]
+		mov ebp, edi
+		and ebp, ecx
+		mov ecx, dword ptr [eax + 0x78]
+		shr ebp, cl
+		mov ecx, dword ptr [esp + 0x38]
+		add ecx, ebp
+		mov ebp, edi
+		mov dword ptr [esp + 0x38], ecx
+		mov ecx, dword ptr [eax + 0x54]
+		and ebp, ecx
+		mov ecx, dword ptr [eax + 0x7c]
+		shr ebp, cl
+		mov ecx, dword ptr [esp + 0x3c]
+		add ecx, ebp
+		mov ebp, edi
+		mov dword ptr [esp + 0x3c], ecx
+		mov ecx, dword ptr [eax + 0x58]
+		and ebp, ecx
+		mov ecx, dword ptr [eax + 0x80]
+		shr ebp, cl
+		mov ecx, ebp
+		mov ebp, dword ptr [esp + 0x10]
+		add ebp, ecx
+		mov ecx, dword ptr [eax + 0x5c]
+		and edi, ecx
+		mov ecx, dword ptr [eax + 0x84]
+		shr edi, cl
+		mov ecx, dword ptr [esp + 0x14]
+		mov dword ptr [esp + 0x10], ebp
+		add ebx, edi
+		mov edi, dword ptr [esp + 0x18]
+		add edi, 4
+		dec ecx
+		mov dword ptr [esp + 0x18], edi
+		mov dword ptr [esp + 0x14], ecx
+		jne L_DownsampleRowPair_9
+		mov ecx, dword ptr [eax + 0x94]
+		mov edi, dword ptr [esp + 0x3c]
+		shr ebx, 2
+		shl ebx, cl
+		mov ecx, dword ptr [eax + 0x90]
+		shr ebp, 2
+		shl ebp, cl
+		mov ecx, dword ptr [eax + 0x8c]
+		shr edi, 2
+		shl edi, cl
+		mov ecx, dword ptr [eax + 0x88]
+		or ebx, ebp
+		or ebx, edi
+		mov edi, dword ptr [esp + 0x38]
+		shr edi, 2
+		shl edi, cl
+		mov ecx, dword ptr [esp + 0x40]
+		add ecx, 2
+		mov dword ptr [esp + 0x40], ecx
+		or ebx, edi
+		mov edi, dword ptr [esp + 0x1c]
+		mov word ptr [ecx - 2], bx
+		cmp ecx, edi
+		jb L_DownsampleRowPair_10
+	L_DownsampleRowPair_1:
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		add esp, 0x24
+		ret 0xc
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x100294f0 FOLDED
 // FUNCTION: LEGORACERS 0x00416030 FOLDED
