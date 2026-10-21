@@ -2066,7 +2066,8 @@ LegoU32 GolD3DRenderDevice::GetMaximumTextureHeight(undefined4) const
 	return 256;
 }
 
-// FUNCTION: GOLDP 0x1000a260
+#ifdef COMPAT_MODE
+
 LegoBool32 GolD3DRenderDevice::TexturesMustBeSquare() const
 {
 	if (m_unk0xc83c4) {
@@ -2079,6 +2080,29 @@ LegoBool32 GolD3DRenderDevice::TexturesMustBeSquare() const
 		return (result >> 5) & 1;
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x1000a260
+__declspec(naked) LegoBool32 GolD3DRenderDevice::TexturesMustBeSquare() const
+{
+	__asm {
+		mov eax, dword ptr [ecx + 0xc83c4]
+		test eax, eax
+		je L_TexturesMustBeSquare_0
+		xor eax, eax
+		ret
+	L_TexturesMustBeSquare_0:
+		mov eax, dword ptr [ecx + 0x1cc]
+		not al
+		and eax, 0xff
+		shr eax, 5
+		and eax, 1
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x1000a290
 LegoBool32 GolD3DRenderDevice::TextureSizesMustBePowersOfTwo() const
