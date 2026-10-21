@@ -16,7 +16,8 @@ DECOMP_SIZE_ASSERT(GolVec4, 0x10)
 DECOMP_SIZE_ASSERT(GolMatrix3, 0x24)
 DECOMP_SIZE_ASSERT(GolMatrix34, 0x30)
 
-// FUNCTION: GOLDP 0x1002f3a0
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
 {
 	LegoU32 i;
@@ -46,7 +47,86 @@ void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_righ
 	}
 }
 
-// FUNCTION: GOLDP 0x1002f450
+#else
+
+// FUNCTION: GOLDP 0x1002f3a0
+__declspec(naked) void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
+{
+	__asm {
+		mov ecx, dword ptr [esp + 4]
+		mov edx, dword ptr [esp + 8]
+		mov eax, dword ptr [esp + 0ch]
+		push ebp
+		push ebx
+		mov ebp, 4
+	loop3a0:
+		fld dword ptr [ecx]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 4]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 8]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 0ch]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 10h]
+		fld dword ptr [ecx + 4]
+		dec ebp
+		mov ebx, dword ptr [eax]
+		fmul dword ptr [edx + 14h]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 18h]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 1ch]
+		fxch st(3)
+		faddp st(7), st(0)
+		faddp st(4), st(0)
+		faddp st(4), st(0)
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 20h]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 24h]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 28h]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 2ch]
+		fxch st(3)
+		faddp st(7), st(0)
+		faddp st(4), st(0)
+		faddp st(4), st(0)
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [edx + 30h]
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [edx + 34h]
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [edx + 38h]
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [edx + 3ch]
+		fxch st(3)
+		faddp st(7), st(0)
+		faddp st(4), st(0)
+		faddp st(4), st(0)
+		faddp st(1), st(0)
+		fxch st(3)
+		fstp dword ptr [eax]
+		fstp dword ptr [eax + 8]
+		fstp dword ptr [eax + 4]
+		fstp dword ptr [eax + 0ch]
+		lea ecx, [ecx + 10h]
+		lea eax, [eax + 10h]
+		jne loop3a0
+		pop ebx
+		pop ebp
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
 {
 	LegoU32 i;
@@ -61,6 +141,73 @@ void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& 
 							p_left.m_m[3][2] * p_right.m_m[2][i] + p_right.m_m[3][i];
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x1002f450
+__declspec(naked) void GolMath::MultiplyMatrix4Affine(
+	const GolMatrix4& p_left,
+	const GolMatrix4& p_right,
+	GolMatrix4* p_dest
+)
+{
+	__asm {
+		mov ecx, dword ptr [esp + 4]
+		mov edx, dword ptr [esp + 8]
+		mov eax, dword ptr [esp + 0ch]
+		push ebp
+		mov ebp, 3
+	loop4f50:
+		fld dword ptr [ecx + 30h]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 20h]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 10h]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 34h]
+		fmul dword ptr [edx + 10h]
+		fld dword ptr [ecx + 24h]
+		fmul dword ptr [edx + 10h]
+		fld dword ptr [ecx + 14h]
+		fmul dword ptr [edx + 10h]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 10h]
+		fxch st(3)
+		faddp st(7), st(0)
+		faddp st(4), st(0)
+		faddp st(4), st(0)
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 38h]
+		fmul dword ptr [edx + 20h]
+		fld dword ptr [ecx + 28h]
+		fmul dword ptr [edx + 20h]
+		fld dword ptr [ecx + 18h]
+		fmul dword ptr [edx + 20h]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 20h]
+		fxch st(1)
+		faddp st(5), st(0)
+		fld dword ptr [edx + 30h]
+		faddp st(7), st(0)
+		faddp st(3), st(0)
+		faddp st(4), st(0)
+		faddp st(4), st(0)
+		fstp dword ptr [eax]
+		fstp dword ptr [eax + 10h]
+		fstp dword ptr [eax + 20h]
+		fstp dword ptr [eax + 30h]
+		dec ebp
+		lea edx, [edx + 4]
+		lea eax, [eax + 4]
+		jne loop4f50
+		pop ebp
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00449170
 void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
