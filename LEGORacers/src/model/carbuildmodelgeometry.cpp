@@ -624,7 +624,8 @@ void CarBuildModel::InterpolateBuildVertex(
 	p_dest->m_normalZ = static_cast<LegoS8>(p_left->m_normalZ * p_leftScale + p_right->m_normalZ * p_rightScale);
 }
 
-// FUNCTION: LEGORACERS 0x00497360
+#ifdef COMPAT_MODE
+
 LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
 {
 	::memset(g_carBuildModelVertexUses, 0, sizeof(g_carBuildModelVertexUses));
@@ -766,6 +767,287 @@ LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
 		previousMaterialIndex = currentMaterialIndex;
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00497360
+__declspec(naked) LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
+{
+	__asm {
+		sub esp, 0x20
+		push ebx
+		push ebp
+		mov edx, ecx
+		push edi
+		mov ecx, 0x1d4c
+		xor eax, eax
+		mov edi, offset g_carBuildModelVertexUses
+		xor ebx, ebx
+		rep stosd
+		mov eax, dword ptr [edx + 0x1ebc]
+		or ebp, 0xffffffff
+		dec eax
+		mov dword ptr [esp + 0x24], ebx
+		test eax, eax
+		mov dword ptr [edx + 0x1ee0], ebx
+		mov dword ptr [esp + 0xc], 2
+		mov dword ptr [esp + 0x10], ebx
+		mov dword ptr [esp + 0x20], ebp
+		mov dword ptr [esp + 0x28], ebx
+		jle L_BuildBatches_0
+		push esi
+		jmp L_BuildBatches_1
+	L_BuildBatches_32:
+		mov ebp, dword ptr [esp + 0x24]
+	L_BuildBatches_1:
+		mov ecx, dword ptr [edx + 0x1ee0]
+		mov dword ptr [esp + 0x1c], 0x42
+		test ecx, ecx
+		mov dword ptr [esp + 0x18], 0
+		je L_BuildBatches_2
+		mov esi, dword ptr [edx + 0x1e38]
+		xor edi, edi
+		mov eax, dword ptr [esi + ebx*4]
+		mov di, word ptr [eax + 2]
+		cmp ebp, edi
+		jne L_BuildBatches_2
+		test byte ptr [esp + 0x34], 0x80
+		je L_BuildBatches_3
+		mov ebp, dword ptr [esp + 0x14]
+		jmp L_BuildBatches_4
+	L_BuildBatches_3:
+		mov eax, dword ptr [esp + 0x14]
+		lea ebp, [ebx + 0x40]
+		cmp ebp, eax
+		mov dword ptr [esp + 0x20], ebp
+		jle L_BuildBatches_5
+		mov ebp, eax
+	L_BuildBatches_4:
+		mov dword ptr [esp + 0x20], ebp
+	L_BuildBatches_5:
+		cmp ebx, ebp
+		mov edi, ebx
+		jge L_BuildBatches_6
+	L_BuildBatches_12:
+		mov eax, dword ptr [esi + edi*4]
+		xor ecx, ecx
+		mov cl, byte ptr [eax]
+		test ecx, ecx
+		mov dword ptr [esp + 0x10], ecx
+		jle L_BuildBatches_7
+		add eax, 8
+		mov ebp, ecx
+	L_BuildBatches_9:
+		xor ebx, ebx
+		mov bx, word ptr [eax]
+		cmp byte ptr [ebx*4 + g_carBuildModelVertexUses + 2], 0
+		je L_BuildBatches_8
+		dec ecx
+	L_BuildBatches_8:
+		add eax, 2
+		dec ebp
+		jne L_BuildBatches_9
+		mov ebx, dword ptr [esp + 0x2c]
+		mov ebp, dword ptr [esp + 0x20]
+	L_BuildBatches_7:
+		test ecx, ecx
+		jne L_BuildBatches_10
+		mov dword ptr [esp + 0x18], edi
+		mov edi, dword ptr [edx + 0x1ebc]
+		mov dword ptr [esp + 0x1c], ecx
+		jmp L_BuildBatches_11
+	L_BuildBatches_10:
+		cmp ecx, dword ptr [esp + 0x1c]
+		jge L_BuildBatches_11
+		mov dword ptr [esp + 0x1c], ecx
+		mov dword ptr [esp + 0x18], edi
+	L_BuildBatches_11:
+		inc edi
+		cmp edi, ebp
+		jl L_BuildBatches_12
+		jmp L_BuildBatches_6
+	L_BuildBatches_2:
+		mov eax, dword ptr [edx + 0x1e38]
+		xor esi, esi
+		mov eax, dword ptr [eax + ebx*4]
+		mov si, word ptr [eax + 2]
+		cmp ebp, esi
+		je L_BuildBatches_6
+		xor eax, eax
+		test ecx, ecx
+		jle L_BuildBatches_13
+		lea ecx, [edx + 0x1e3c]
+	L_BuildBatches_14:
+		xor esi, esi
+		inc eax
+		mov si, word ptr [ecx]
+		add ecx, 2
+		mov byte ptr [esi*4 + g_carBuildModelVertexUses + 2], 0
+		mov esi, dword ptr [edx + 0x1ee0]
+		cmp eax, esi
+		jl L_BuildBatches_14
+	L_BuildBatches_13:
+		mov ecx, dword ptr [edx + 0x1e38]
+		mov esi, ebx
+		mov eax, dword ptr [ecx + ebx*4]
+		xor ecx, ecx
+		mov cx, word ptr [eax + 2]
+		mov eax, dword ptr [edx + 0x1ebc]
+		cmp ebx, eax
+		mov dword ptr [esp + 0x24], ecx
+		jge L_BuildBatches_15
+		jmp L_BuildBatches_16
+	L_BuildBatches_19:
+		mov ecx, dword ptr [esp + 0x24]
+	L_BuildBatches_16:
+		mov eax, dword ptr [edx + 0x1e38]
+		xor edi, edi
+		mov eax, dword ptr [eax + esi*4]
+		mov di, word ptr [eax + 2]
+		cmp ecx, edi
+		jne L_BuildBatches_15
+		xor ecx, ecx
+		mov cl, byte ptr [eax]
+		mov edi, ecx
+		test edi, edi
+		mov dword ptr [esp + 0x10], edi
+		jle L_BuildBatches_17
+		mov ecx, 8
+	L_BuildBatches_18:
+		mov eax, dword ptr [edx + 0x1e38]
+		add ecx, 2
+		mov ebp, dword ptr [eax + esi*4]
+		xor eax, eax
+		mov ax, word ptr [ecx + ebp - 2]
+		inc word ptr [eax*4 + g_carBuildModelVertexUses]
+		dec edi
+		jne L_BuildBatches_18
+	L_BuildBatches_17:
+		mov eax, dword ptr [edx + 0x1ebc]
+		inc esi
+		cmp esi, eax
+		jl L_BuildBatches_19
+	L_BuildBatches_15:
+		mov dword ptr [esp + 0x14], esi
+	L_BuildBatches_6:
+		mov eax, dword ptr [edx + 0x1ee0]
+		mov ecx, dword ptr [esp + 0x1c]
+		add eax, ecx
+		cmp eax, 0x40
+		jbe L_BuildBatches_20
+		mov eax, dword ptr [esp + 0x14]
+		mov dword ptr [esp + 0x18], 0
+		cmp ebx, eax
+		mov ebp, 0x7fffffff
+		mov edi, ebx
+		jge L_BuildBatches_21
+	L_BuildBatches_25:
+		mov ecx, dword ptr [esp + 0x10]
+		test ecx, ecx
+		jle L_BuildBatches_22
+		mov eax, dword ptr [edx + 0x1e38]
+		mov eax, dword ptr [eax + edi*4]
+		add eax, 8
+	L_BuildBatches_23:
+		xor esi, esi
+		xor ebx, ebx
+		mov si, word ptr [eax]
+		add eax, 2
+		mov bx, word ptr [esi*4 + g_carBuildModelVertexUses]
+		mov esi, dword ptr [esp + 0x28]
+		add esi, ebx
+		dec ecx
+		mov dword ptr [esp + 0x28], esi
+		jne L_BuildBatches_23
+		mov ebx, dword ptr [esp + 0x2c]
+	L_BuildBatches_22:
+		mov eax, dword ptr [esp + 0x28]
+		cmp ebp, eax
+		jle L_BuildBatches_24
+		mov ebp, eax
+		mov dword ptr [esp + 0x18], edi
+	L_BuildBatches_24:
+		mov eax, dword ptr [esp + 0x14]
+		inc edi
+		cmp edi, eax
+		jl L_BuildBatches_25
+	L_BuildBatches_21:
+		mov ecx, dword ptr [edx + 0x1ee0]
+		xor eax, eax
+		test ecx, ecx
+		jle L_BuildBatches_26
+		lea ecx, [edx + 0x1e3c]
+	L_BuildBatches_27:
+		xor esi, esi
+		inc eax
+		mov si, word ptr [ecx]
+		add ecx, 2
+		mov byte ptr [esi*4 + g_carBuildModelVertexUses + 2], 0
+		mov esi, dword ptr [edx + 0x1ee0]
+		cmp eax, esi
+		jl L_BuildBatches_27
+	L_BuildBatches_26:
+		mov dword ptr [edx + 0x1ee0], 0
+	L_BuildBatches_20:
+		mov esi, dword ptr [esp + 0x18]
+		test esi, esi
+		je L_BuildBatches_28
+		mov eax, dword ptr [edx + 0x1e38]
+		mov edi, dword ptr [eax + esi*4]
+		mov ecx, dword ptr [eax + ebx*4]
+		mov dword ptr [eax + ebx*4], edi
+		mov eax, dword ptr [edx + 0x1e38]
+		mov dword ptr [eax + esi*4], ecx
+	L_BuildBatches_28:
+		mov ecx, dword ptr [edx + 0x1e38]
+		xor ebp, ebp
+		lea eax, [ecx + ebx*4]
+		mov ecx, dword ptr [ecx + ebx*4]
+		cmp byte ptr [ecx], 0
+		jbe L_BuildBatches_29
+		mov edi, 8
+	L_BuildBatches_31:
+		mov ecx, dword ptr [eax]
+		xor eax, eax
+		mov ax, word ptr [edi + ecx]
+		dec word ptr [eax*4 + g_carBuildModelVertexUses]
+		mov cl, byte ptr [eax*4 + g_carBuildModelVertexUses + 2]
+		test cl, cl
+		jne L_BuildBatches_30
+		mov byte ptr [eax*4 + g_carBuildModelVertexUses + 2], 1
+		mov ecx, dword ptr [edx + 0x1ee0]
+		mov word ptr [edx + ecx*2 + 0x1e3c], ax
+		mov eax, dword ptr [edx + 0x1ee0]
+		inc eax
+		mov dword ptr [edx + 0x1ee0], eax
+	L_BuildBatches_30:
+		mov eax, dword ptr [edx + 0x1e38]
+		xor ecx, ecx
+		inc ebp
+		add edi, 2
+		mov esi, dword ptr [eax + ebx*4]
+		lea eax, [eax + ebx*4]
+		mov cl, byte ptr [esi]
+		cmp ebp, ecx
+		jl L_BuildBatches_31
+	L_BuildBatches_29:
+		mov eax, dword ptr [edx + 0x1ebc]
+		inc ebx
+		dec eax
+		mov dword ptr [esp + 0x2c], ebx
+		cmp ebx, eax
+		jl L_BuildBatches_32
+		pop esi
+	L_BuildBatches_0:
+		pop edi
+		pop ebp
+		pop ebx
+		add esp, 0x20
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00497690
 void CarBuildModel::FinalizeBuild(LegoU8 p_buildFlags)

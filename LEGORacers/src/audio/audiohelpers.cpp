@@ -13,7 +13,8 @@ LegoS32 g_adpcmStepTable[89] = {7,     8,     9,     10,    11,    12,    13,   
 								7132,  7845,  8630,  9493,  10442, 11487, 12635, 13899, 15289, 16818, 18500, 20350,
 								22385, 24623, 27086, 29794, 32767};
 
-// FUNCTION: LEGORACERS 0x00418100
+#ifdef COMPAT_MODE
+
 void DecodeMonoPcmToMono(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_count, LegoS32* p_state)
 {
 	LegoS32 index = p_state[1];
@@ -93,7 +94,108 @@ void DecodeMonoPcmToMono(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_cou
 	p_state[0] = sample;
 }
 
-// FUNCTION: LEGORACERS 0x00418200
+#else
+
+// FUNCTION: LEGORACERS 0x00418100
+__declspec(naked) void DecodeMonoPcmToMono(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_count, LegoS32* p_state)
+{
+	__asm {
+		push ebp
+		push esi
+		push edi
+		push ebx
+		mov edx, dword ptr [esp + 0x20]
+		mov esi, dword ptr [esp + 0x14]
+		mov edi, dword ptr [esp + 0x18]
+		mov ebp, dword ptr [edx + 4]
+		mov ecx, dword ptr [edx]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+	L_DecodeMonoPcmToMono_8:
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		shr edx, 4
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToMono_0
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToMono_1
+	L_DecodeMonoPcmToMono_0:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToMono_1
+		mov ebp, 0x58
+	L_DecodeMonoPcmToMono_1:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToMono_2
+		add ecx, eax
+		mov dl, byte ptr [esi]
+		cmp ecx, 0x7fff
+		mov eax, 7
+		jle L_DecodeMonoPcmToMono_3
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToMono_3
+	L_DecodeMonoPcmToMono_2:
+		sub ecx, eax
+		mov dl, byte ptr [esi]
+		cmp ecx, 0xffff8000
+		mov eax, 7
+		jge L_DecodeMonoPcmToMono_3
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToMono_3:
+		mov word ptr [edi], cx
+		add esi, 1
+		add edi, 2
+		and eax, edx
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToMono_4
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToMono_5
+	L_DecodeMonoPcmToMono_4:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToMono_5
+		mov ebp, 0x58
+	L_DecodeMonoPcmToMono_5:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToMono_6
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeMonoPcmToMono_7
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToMono_7
+	L_DecodeMonoPcmToMono_6:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeMonoPcmToMono_7
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToMono_7:
+		mov eax, dword ptr [esp + 0x1c]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		mov word ptr [edi], cx
+		dec eax
+		lea edi, [edi + 2]
+		mov dword ptr [esp + 0x1c], eax
+		jne L_DecodeMonoPcmToMono_8
+		mov edx, dword ptr [esp + 0x20]
+		mov dword ptr [edx + 4], ebp
+		mov dword ptr [edx], ecx
+		pop ebx
+		pop edi
+		pop esi
+		pop ebp
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void DecodeMonoPcmToStereo(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_count, LegoS32* p_state)
 {
 	LegoS32 index = p_state[1];
@@ -175,7 +277,115 @@ void DecodeMonoPcmToStereo(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_c
 	p_state[0] = sample;
 }
 
-// FUNCTION: LEGORACERS 0x00418310
+#else
+
+// FUNCTION: LEGORACERS 0x00418200
+__declspec(naked) void DecodeMonoPcmToStereo(
+	LegoU8* p_source,
+	LegoS16* p_destination,
+	LegoS32 p_count,
+	LegoS32* p_state
+)
+{
+	__asm {
+		push ebp
+		push esi
+		push edi
+		push ebx
+		mov edx, dword ptr [esp + 0x20]
+		mov esi, dword ptr [esp + 0x14]
+		mov edi, dword ptr [esp + 0x18]
+		mov ebp, dword ptr [edx + 4]
+		mov ecx, dword ptr [edx]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+	L_DecodeMonoPcmToStereoTag_8:
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		shr edx, 4
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToStereoTag_0
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToStereoTag_1
+	L_DecodeMonoPcmToStereoTag_0:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToStereoTag_1
+		mov ebp, 0x58
+	L_DecodeMonoPcmToStereoTag_1:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToStereoTag_2
+		add ecx, eax
+		mov dl, byte ptr [esi]
+		cmp ecx, 0x7fff
+		mov eax, 7
+		jle L_DecodeMonoPcmToStereoTag_3
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToStereoTag_3
+	L_DecodeMonoPcmToStereoTag_2:
+		sub ecx, eax
+		mov dl, byte ptr [esi]
+		cmp ecx, 0xffff8000
+		mov eax, 7
+		jge L_DecodeMonoPcmToStereoTag_3
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToStereoTag_3:
+		mov word ptr [edi], cx
+		add esi, 1
+		mov word ptr [edi + 2], cx
+		add edi, 4
+		and eax, edx
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToStereoTag_4
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToStereoTag_5
+	L_DecodeMonoPcmToStereoTag_4:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToStereoTag_5
+		mov ebp, 0x58
+	L_DecodeMonoPcmToStereoTag_5:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToStereoTag_6
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeMonoPcmToStereoTag_7
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToStereoTag_7
+	L_DecodeMonoPcmToStereoTag_6:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeMonoPcmToStereoTag_7
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToStereoTag_7:
+		mov eax, dword ptr [esp + 0x1c]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		mov word ptr [edi], cx
+		dec eax
+		mov word ptr [edi + 2], cx
+		lea edi, [edi + 4]
+		mov dword ptr [esp + 0x1c], eax
+		jne L_DecodeMonoPcmToStereoTag_8
+		mov edx, dword ptr [esp + 0x20]
+		mov dword ptr [edx + 4], ebp
+		mov dword ptr [edx], ecx
+		pop ebx
+		pop edi
+		pop esi
+		pop ebp
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 static void DecodeStereoChannel(LegoU8* p_source, LegoS16* p_destination, LegoS32 p_count, LegoS32* p_state)
 {
 	LegoS32 sample = p_state[0];
@@ -253,6 +463,109 @@ static void DecodeStereoChannel(LegoU8* p_source, LegoS16* p_destination, LegoS3
 	p_state[0] = sample;
 }
 
+#else
+
+// FUNCTION: LEGORACERS 0x00418310
+__declspec(naked) static void DecodeStereoChannel(
+	LegoU8* p_source,
+	LegoS16* p_destination,
+	LegoS32 p_count,
+	LegoS32* p_state
+)
+{
+	__asm {
+		push ebp
+		push esi
+		push edi
+		push ebx
+		mov edx, dword ptr [esp + 0x20]
+		mov esi, dword ptr [esp + 0x14]
+		mov edi, dword ptr [esp + 0x18]
+		mov ebp, dword ptr [edx + 4]
+		mov ecx, dword ptr [edx]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+	L_DecodeStereoChannel_8:
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		shr edx, 4
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeStereoChannel_0
+		xor ebp, ebp
+		jmp L_DecodeStereoChannel_1
+	L_DecodeStereoChannel_0:
+		cmp ebp, 0x58
+		jle L_DecodeStereoChannel_1
+		mov ebp, 0x58
+	L_DecodeStereoChannel_1:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeStereoChannel_2
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeStereoChannel_3
+		mov ecx, 0x7fff
+		jmp L_DecodeStereoChannel_3
+	L_DecodeStereoChannel_2:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeStereoChannel_3
+		mov ecx, 0xffff8000
+	L_DecodeStereoChannel_3:
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		mov word ptr [edi], cx
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		add esi, 2
+		add edi, 4
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeStereoChannel_4
+		xor ebp, ebp
+		jmp L_DecodeStereoChannel_5
+	L_DecodeStereoChannel_4:
+		cmp ebp, 0x58
+		jle L_DecodeStereoChannel_5
+		mov ebp, 0x58
+	L_DecodeStereoChannel_5:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeStereoChannel_6
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeStereoChannel_7
+		mov ecx, 0x7fff
+		jmp L_DecodeStereoChannel_7
+	L_DecodeStereoChannel_6:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeStereoChannel_7
+		mov ecx, 0xffff8000
+	L_DecodeStereoChannel_7:
+		mov eax, dword ptr [esp + 0x1c]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		mov word ptr [edi], cx
+		dec eax
+		lea edi, [edi + 4]
+		mov dword ptr [esp + 0x1c], eax
+		jne L_DecodeStereoChannel_8
+		mov edx, dword ptr [esp + 0x20]
+		mov dword ptr [edx + 4], ebp
+		mov dword ptr [edx], ecx
+		pop ebx
+		pop edi
+		pop esi
+		pop ebp
+		ret
+	}
+}
+
+#endif
+
 // FUNCTION: LEGORACERS 0x00418410
 void DecodeStereoPcmToStereo(
 	LegoU8* p_source,
@@ -281,7 +594,8 @@ void DecodeStereoPcmToStereo(
 	DecodeStereoChannel(p_source, p_destination, p_count, p_rightState);
 }
 
-// FUNCTION: LEGORACERS 0x004184c0
+#ifdef COMPAT_MODE
+
 void DecodeMonoPcmToStereoInterpolated(LegoChar* p_source, LegoS16* p_destination, LegoS32 p_count, LegoS32* p_state)
 {
 	LegoS32 index = p_state[1];
@@ -362,3 +676,115 @@ void DecodeMonoPcmToStereoInterpolated(LegoChar* p_source, LegoS16* p_destinatio
 	p_state[1] = index;
 	p_state[0] = sample;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x004184c0
+__declspec(naked) void DecodeMonoPcmToStereoInterpolated(
+	LegoChar* p_source,
+	LegoS16* p_destination,
+	LegoS32 p_count,
+	LegoS32* p_state
+)
+{
+	__asm {
+		push ebp
+		push esi
+		push edi
+		push ebx
+		mov edx, dword ptr [esp + 0x20]
+		mov esi, dword ptr [esp + 0x14]
+		mov edi, dword ptr [esp + 0x18]
+		mov ebp, dword ptr [edx + 4]
+		mov ecx, dword ptr [edx]
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+	L_DecodeMonoPcmToStereoInterpolated_8:
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		shr edx, 4
+		push ecx
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToStereoInterpolated_0
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToStereoInterpolated_1
+	L_DecodeMonoPcmToStereoInterpolated_0:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToStereoInterpolated_1
+		mov ebp, 0x58
+	L_DecodeMonoPcmToStereoInterpolated_1:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToStereoInterpolated_2
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeMonoPcmToStereoInterpolated_3
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToStereoInterpolated_3
+	L_DecodeMonoPcmToStereoInterpolated_2:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeMonoPcmToStereoInterpolated_3
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToStereoInterpolated_3:
+		pop eax
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		add eax, ecx
+		mov word ptr [edi + 2], cx
+		sar eax, 1
+		push ecx
+		mov word ptr [edi], ax
+		mov dl, byte ptr [esi]
+		mov eax, 7
+		add esi, 1
+		and eax, edx
+		and edx, 0xf
+		imul eax, ebx
+		add ebp, dword ptr [edx*4 + g_adpcmIndexAdjust]
+		jns L_DecodeMonoPcmToStereoInterpolated_4
+		xor ebp, ebp
+		jmp L_DecodeMonoPcmToStereoInterpolated_5
+	L_DecodeMonoPcmToStereoInterpolated_4:
+		cmp ebp, 0x58
+		jle L_DecodeMonoPcmToStereoInterpolated_5
+		mov ebp, 0x58
+	L_DecodeMonoPcmToStereoInterpolated_5:
+		sar eax, 2
+		and dl, 8
+		jne L_DecodeMonoPcmToStereoInterpolated_6
+		add ecx, eax
+		cmp ecx, 0x7fff
+		jle L_DecodeMonoPcmToStereoInterpolated_7
+		mov ecx, 0x7fff
+		jmp L_DecodeMonoPcmToStereoInterpolated_7
+	L_DecodeMonoPcmToStereoInterpolated_6:
+		sub ecx, eax
+		cmp ecx, 0xffff8000
+		jge L_DecodeMonoPcmToStereoInterpolated_7
+		mov ecx, 0xffff8000
+	L_DecodeMonoPcmToStereoInterpolated_7:
+		pop eax
+		mov edx, dword ptr [esp + 0x1c]
+		add eax, ecx
+		mov ebx, dword ptr [ebp*4 + g_adpcmStepTable]
+		sar eax, 1
+		mov word ptr [edi + 6], cx
+		dec edx
+		mov word ptr [edi + 4], ax
+		lea edi, [edi + 8]
+		mov dword ptr [esp + 0x1c], edx
+		jne L_DecodeMonoPcmToStereoInterpolated_8
+		mov edx, dword ptr [esp + 0x20]
+		mov dword ptr [edx + 4], ebp
+		mov dword ptr [edx], ecx
+		pop ebx
+		pop edi
+		pop esi
+		pop ebp
+		ret
+	}
+}
+
+#endif
