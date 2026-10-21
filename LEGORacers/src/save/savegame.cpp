@@ -181,7 +181,8 @@ LegoU32 SaveGame::CalculateBlockChecksum(const LegoU8* p_source, LegoU32 p_size)
 	return result;
 }
 
-// FUNCTION: LEGORACERS 0x00442a00
+#ifdef COMPAT_MODE
+
 void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
 {
 	LegoU8* dest;
@@ -268,7 +269,204 @@ void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
 	}
 }
 
-// FUNCTION: LEGORACERS 0x00442c20
+#else
+
+// FUNCTION: LEGORACERS 0x00442a00
+__declspec(naked) void SaveGame::ReadPersistentGameState(PersistentGameState* p_state)
+{
+	__asm {
+		mov edx, dword ptr [esp + 4]
+		sub esp, 0x1c
+		push ebp
+		push esi
+		mov esi, ecx
+		push edi
+		mov al, byte ptr [esi + 0x36d]
+		mov byte ptr [edx], al
+		xor eax, eax
+	L_ReadPersistentGameState_0:
+		mov cl, byte ptr [esi + eax + 0x36e]
+		mov byte ptr [edx + eax + 1], cl
+		inc eax
+		cmp eax, 0x10
+		jb L_ReadPersistentGameState_0
+		mov al, byte ptr [esi + 0x37e]
+		lea edi, [edx + 0x35d]
+		mov byte ptr [edx + 0x11], al
+		mov cl, byte ptr [esi + 0x37f]
+		mov byte ptr [edx + 0x12], cl
+		mov al, byte ptr [esi + 0x380]
+		mov byte ptr [edx + 0x13], al
+		mov cl, byte ptr [esi + 0x381]
+		mov byte ptr [edx + 0x14], cl
+		mov al, byte ptr [esi + 0x382]
+		mov byte ptr [edx + 0x15], al
+		mov cl, byte ptr [esi + 0x383]
+		mov byte ptr [edx + 0x16], cl
+		mov al, byte ptr [esi + 0x384]
+		mov byte ptr [edx + 0x17], al
+		lea eax, [esi + 0x386]
+		mov ebp, 2
+	L_ReadPersistentGameState_1:
+		mov cl, byte ptr [eax - 1]
+		add eax, 4
+		mov byte ptr [edi - 1], cl
+		mov cl, byte ptr [eax - 4]
+		mov byte ptr [edi], cl
+		mov cl, byte ptr [eax - 3]
+		mov byte ptr [edi + 1], cl
+		mov cl, byte ptr [eax - 2]
+		mov byte ptr [edi + 2], cl
+		add edi, 4
+		dec ebp
+		jne L_ReadPersistentGameState_1
+		lea eax, [esi + 0x25]
+		lea ebp, [esi + 0x24]
+		lea ecx, [esi + 0x26]
+		add edx, 0x365
+		sub ebp, eax
+		sub eax, ecx
+		push ebx
+		lea edi, [ecx + 0x369]
+		mov dword ptr [esp + 0x20], ebp
+		mov dword ptr [esp + 0x10], eax
+		mov dword ptr [esp + 0x1c], 5
+		jmp L_ReadPersistentGameState_2
+	L_ReadPersistentGameState_5:
+		mov ebp, dword ptr [esp + 0x20]
+		mov eax, dword ptr [esp + 0x10]
+	L_ReadPersistentGameState_2:
+		add eax, edi
+		lea ebx, [esi + 0x24]
+		mov dword ptr [esp + 0x18], 9
+		mov cl, byte ptr [eax + ebp]
+		lea ebp, [esi + 0x27]
+		mov byte ptr [edx - 1], cl
+		mov al, byte ptr [eax]
+		mov byte ptr [edx], al
+		mov cl, byte ptr [edi]
+		mov byte ptr [edx + 1], cl
+		lea ecx, [esi + 0x26]
+		lea eax, [edx + 3]
+		sub ebp, ecx
+		sub ebx, ecx
+		mov dword ptr [esp + 0x14], eax
+		lea eax, [edi + 3]
+		mov dword ptr [esp + 0x24], ebp
+		mov dword ptr [esp + 0x28], ebx
+		jmp L_ReadPersistentGameState_3
+	L_ReadPersistentGameState_4:
+		mov ebp, dword ptr [esp + 0x24]
+	L_ReadPersistentGameState_3:
+		xor ecx, ecx
+		mov cl, byte ptr [eax + ebp]
+		mov ebp, dword ptr [esp + 0x10]
+		mov ebx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [eax]
+		add eax, 4
+		shl ebx, 8
+		add ebx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [eax + ebp - 4]
+		mov ebp, dword ptr [esp + 0x28]
+		shl ebx, 8
+		add ebx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [eax + ebp - 4]
+		shl ebx, 8
+		add ebx, ecx
+		mov ecx, dword ptr [esp + 0x14]
+		mov dword ptr [ecx], ebx
+		add ecx, 4
+		mov dword ptr [esp + 0x14], ecx
+		mov ecx, dword ptr [esp + 0x18]
+		dec ecx
+		mov dword ptr [esp + 0x18], ecx
+		jne L_ReadPersistentGameState_4
+		mov eax, dword ptr [esp + 0x1c]
+		add edi, 0x27
+		add edx, 0x28
+		dec eax
+		mov dword ptr [esp + 0x1c], eax
+		jne L_ReadPersistentGameState_5
+		mov eax, dword ptr [esp + 0x30]
+		mov dl, byte ptr [esi + 0x29]
+		pop ebx
+		mov byte ptr [eax + 0x18], dl
+		mov cl, byte ptr [esi + 0x2a]
+		mov byte ptr [eax + 0x19], cl
+		lea edi, [eax + 0x1f0]
+		movzx dx, byte ptr [esi + 0x2c]
+		movzx cx, byte ptr [esi + 0x2b]
+		shl edx, 8
+		add edx, ecx
+		lea ebp, [eax + 0x50]
+		mov word ptr [eax + 0x1a], dx
+		lea eax, [esi + 0x2f]
+		mov esi, 0xd
+	L_ReadPersistentGameState_8:
+		xor edx, edx
+		xor ecx, ecx
+		mov dl, byte ptr [eax + 1]
+		mov cl, byte ptr [eax]
+		shl edx, 8
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [eax - 1]
+		shl edx, 8
+		add edx, ecx
+		xor ecx, ecx
+		mov cl, byte ptr [eax - 2]
+		shl edx, 8
+		add edx, ecx
+		xor ecx, ecx
+		mov dword ptr [ebp - 0x34], edx
+	L_ReadPersistentGameState_6:
+		mov dl, byte ptr [eax + ecx + 2]
+		mov byte ptr [edi + ecx - 0x16c], dl
+		inc ecx
+		cmp ecx, 0x1c
+		jb L_ReadPersistentGameState_6
+		xor ecx, ecx
+		xor edx, edx
+		mov cl, byte ptr [eax + 0x21]
+		mov dl, byte ptr [eax + 0x20]
+		shl ecx, 8
+		add ecx, edx
+		xor edx, edx
+		mov dl, byte ptr [eax + 0x1f]
+		shl ecx, 8
+		add ecx, edx
+		xor edx, edx
+		mov dl, byte ptr [eax + 0x1e]
+		shl ecx, 8
+		add ecx, edx
+		mov dword ptr [ebp], ecx
+		xor ecx, ecx
+	L_ReadPersistentGameState_7:
+		mov dl, byte ptr [eax + ecx + 0x22]
+		mov byte ptr [edi + ecx], dl
+		inc ecx
+		cmp ecx, 0x1c
+		jb L_ReadPersistentGameState_7
+		add ebp, 4
+		add eax, 0x40
+		add edi, 0x1c
+		dec esi
+		jne L_ReadPersistentGameState_8
+		pop edi
+		pop esi
+		pop ebp
+		add esp, 0x1c
+		ret 4
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void SaveGame::WritePersistentGameState(PersistentGameState* p_state)
 {
 	LegoU8* dest;
@@ -348,3 +546,181 @@ void SaveGame::WritePersistentGameState(PersistentGameState* p_state)
 		dest += c_scoreRecordSize;
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00442c20
+__declspec(naked) void SaveGame::WritePersistentGameState(PersistentGameState* p_state)
+{
+	__asm {
+		sub esp, 0x18
+		push ebp
+		push esi
+		mov esi, dword ptr [esp + 0x24]
+		push edi
+		mov edi, ecx
+		mov al, byte ptr [esi]
+		mov byte ptr [edi + 0x36d], al
+		xor eax, eax
+	L_WritePersistentGameState_0:
+		mov cl, byte ptr [esi + eax + 1]
+		mov byte ptr [edi + eax + 0x36e], cl
+		inc eax
+		cmp eax, 0x10
+		jb L_WritePersistentGameState_0
+		mov dl, byte ptr [esi + 0x11]
+		mov ebp, 2
+		mov byte ptr [edi + 0x37e], dl
+		mov al, byte ptr [esi + 0x12]
+		mov byte ptr [edi + 0x37f], al
+		mov cl, byte ptr [esi + 0x13]
+		mov byte ptr [edi + 0x380], cl
+		mov dl, byte ptr [esi + 0x14]
+		mov byte ptr [edi + 0x381], dl
+		mov al, byte ptr [esi + 0x15]
+		mov byte ptr [edi + 0x382], al
+		mov cl, byte ptr [esi + 0x16]
+		mov byte ptr [edi + 0x383], cl
+		mov dl, byte ptr [esi + 0x17]
+		mov byte ptr [edi + 0x384], dl
+		lea eax, [edi + 0x386]
+		lea ecx, [esi + 0x35d]
+	L_WritePersistentGameState_1:
+		mov dl, byte ptr [ecx - 1]
+		add ecx, 4
+		mov byte ptr [eax - 1], dl
+		mov dl, byte ptr [ecx - 4]
+		mov byte ptr [eax], dl
+		mov dl, byte ptr [ecx - 3]
+		mov byte ptr [eax + 1], dl
+		mov dl, byte ptr [ecx - 2]
+		mov byte ptr [eax + 2], dl
+		add eax, 4
+		dec ebp
+		jne L_WritePersistentGameState_1
+		lea ecx, [edi + 0x24]
+		lea eax, [edi + 0x26]
+		lea edx, [edi + 0x25]
+		add esi, 0x365
+		sub ecx, eax
+		sub eax, edx
+		push ebx
+		lea ebp, [edx + 0x369]
+		mov dword ptr [esp + 0x1c], ecx
+		mov dword ptr [esp + 0x10], eax
+		mov dword ptr [esp + 0x18], 5
+		jmp L_WritePersistentGameState_2
+	L_WritePersistentGameState_4:
+		mov eax, dword ptr [esp + 0x10]
+		mov ecx, dword ptr [esp + 0x1c]
+	L_WritePersistentGameState_2:
+		mov dl, byte ptr [esi - 1]
+		add eax, ebp
+		lea ebx, [edi + 0x24]
+		mov dword ptr [esp + 0x14], 9
+		mov byte ptr [eax + ecx], dl
+		mov cl, byte ptr [esi]
+		mov byte ptr [ebp], cl
+		mov dl, byte ptr [esi + 1]
+		lea ecx, [edi + 0x25]
+		mov byte ptr [eax], dl
+		sub ebx, ecx
+		lea edx, [esi + 3]
+		mov dword ptr [esp + 0x20], ebx
+		lea ebx, [edi + 0x27]
+		sub ebx, ecx
+		lea eax, [ebp + 3]
+		mov dword ptr [esp + 0x24], ebx
+	L_WritePersistentGameState_3:
+		mov ebx, dword ptr [esp + 0x20]
+		mov cl, byte ptr [edx]
+		add edx, 4
+		mov byte ptr [ebx + eax], cl
+		mov ecx, dword ptr [edx - 4]
+		mov ebx, dword ptr [esp + 0x10]
+		add eax, 4
+		shr ecx, 8
+		mov byte ptr [eax - 4], cl
+		mov ecx, dword ptr [edx - 4]
+		shr ecx, 0x10
+		mov byte ptr [ebx + eax - 4], cl
+		mov ecx, dword ptr [edx - 4]
+		mov ebx, dword ptr [esp + 0x24]
+		shr ecx, 0x18
+		mov byte ptr [ebx + eax - 4], cl
+		mov ecx, dword ptr [esp + 0x14]
+		dec ecx
+		mov dword ptr [esp + 0x14], ecx
+		jne L_WritePersistentGameState_3
+		mov eax, dword ptr [esp + 0x18]
+		add ebp, 0x27
+		add esi, 0x28
+		dec eax
+		mov dword ptr [esp + 0x18], eax
+		jne L_WritePersistentGameState_4
+		mov eax, dword ptr [esp + 0x2c]
+		pop ebx
+		mov dl, byte ptr [eax + 0x18]
+		lea ebp, [eax + 0x1f0]
+		mov byte ptr [edi + 0x29], dl
+		mov cl, byte ptr [eax + 0x19]
+		mov byte ptr [edi + 0x2a], cl
+		mov dl, byte ptr [eax + 0x1a]
+		xor ecx, ecx
+		mov byte ptr [edi + 0x2b], dl
+		mov cl, byte ptr [eax + 0x1b]
+		lea esi, [eax + 0x50]
+		mov byte ptr [edi + 0x2c], cl
+		lea eax, [edi + 0x2f]
+		mov edi, 0xd
+	L_WritePersistentGameState_7:
+		mov dl, byte ptr [esi - 0x34]
+		mov byte ptr [eax - 2], dl
+		mov ecx, dword ptr [esi - 0x34]
+		shr ecx, 8
+		mov byte ptr [eax - 1], cl
+		mov edx, dword ptr [esi - 0x34]
+		shr edx, 0x10
+		mov byte ptr [eax], dl
+		mov ecx, dword ptr [esi - 0x34]
+		shr ecx, 0x18
+		mov byte ptr [eax + 1], cl
+		xor ecx, ecx
+	L_WritePersistentGameState_5:
+		mov dl, byte ptr [ecx + ebp - 0x16c]
+		mov byte ptr [eax + ecx + 2], dl
+		inc ecx
+		cmp ecx, 0x1c
+		jb L_WritePersistentGameState_5
+		mov cl, byte ptr [esi]
+		mov byte ptr [eax + 0x1e], cl
+		mov edx, dword ptr [esi]
+		shr edx, 8
+		mov byte ptr [eax + 0x1f], dl
+		mov ecx, dword ptr [esi]
+		shr ecx, 0x10
+		mov byte ptr [eax + 0x20], cl
+		mov edx, dword ptr [esi]
+		shr edx, 0x18
+		mov byte ptr [eax + 0x21], dl
+		xor ecx, ecx
+	L_WritePersistentGameState_6:
+		mov dl, byte ptr [ecx + ebp]
+		mov byte ptr [eax + ecx + 0x22], dl
+		inc ecx
+		cmp ecx, 0x1c
+		jb L_WritePersistentGameState_6
+		add esi, 4
+		add eax, 0x40
+		add ebp, 0x1c
+		dec edi
+		jne L_WritePersistentGameState_7
+		pop edi
+		pop esi
+		pop ebp
+		add esp, 0x18
+		ret 4
+	}
+}
+
+#endif

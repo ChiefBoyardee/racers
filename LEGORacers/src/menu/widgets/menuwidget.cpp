@@ -208,7 +208,8 @@ undefined4 MenuWidget::HitTest(LegoS32 p_x, LegoS32 p_y)
 	return p_x >= 0 && p_x <= (m_rect.m_right - m_rect.m_left) && p_y >= 0 && p_y <= (m_rect.m_bottom - m_rect.m_top);
 }
 
-// FUNCTION: LEGORACERS 0x00472c80
+#ifdef COMPAT_MODE
+
 void MenuWidget::CenterRectIn(const Rect* p_source, Rect* p_dest) const
 {
 	const Rect* source = p_source;
@@ -247,6 +248,74 @@ void MenuWidget::CenterRectIn(const Rect* p_source, Rect* p_dest) const
 		dest->m_bottom = source->m_bottom;
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00472c80
+__declspec(naked) void MenuWidget::CenterRectIn(const Rect* p_source, Rect* p_dest) const
+{
+	__asm {
+		mov ecx, dword ptr [esp + 4]
+		push ebx
+		push ebp
+		push esi
+		mov eax, dword ptr [ecx + 4]
+		push edi
+		mov edi, dword ptr [ecx + 0xc]
+		mov ebp, dword ptr [ecx]
+		mov edx, dword ptr [ecx + 8]
+		sub edi, eax
+		mov eax, dword ptr [esp + 0x18]
+		sub edx, ebp
+		mov esi, dword ptr [eax + 8]
+		mov ebx, dword ptr [eax]
+		sub esi, ebx
+		mov ebx, dword ptr [eax + 0xc]
+		sub ebx, dword ptr [eax + 4]
+		cmp edx, esi
+		jbe L_CenterRectIn_0
+		sub edx, esi
+		shr edx, 1
+		lea esi, [edx + ebp]
+		mov dword ptr [eax], esi
+		mov esi, dword ptr [ecx + 8]
+		sub esi, edx
+		mov dword ptr [eax + 8], esi
+		jmp L_CenterRectIn_1
+	L_CenterRectIn_0:
+		mov dword ptr [eax], ebp
+		mov edx, dword ptr [ecx + 8]
+		mov dword ptr [eax + 8], edx
+	L_CenterRectIn_1:
+		cmp edi, ebx
+		jbe L_CenterRectIn_2
+		mov edx, dword ptr [ecx + 4]
+		sub edi, ebx
+		shr edi, 1
+		add edx, edi
+		mov dword ptr [eax + 4], edx
+		mov ecx, dword ptr [ecx + 0xc]
+		sub ecx, edi
+		pop edi
+		pop esi
+		pop ebp
+		mov dword ptr [eax + 0xc], ecx
+		pop ebx
+		ret 8
+	L_CenterRectIn_2:
+		mov edx, dword ptr [ecx + 4]
+		pop edi
+		mov dword ptr [eax + 4], edx
+		mov ecx, dword ptr [ecx + 0xc]
+		pop esi
+		pop ebp
+		mov dword ptr [eax + 0xc], ecx
+		pop ebx
+		ret 8
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00472d00
 void MenuWidget::MeasureText(
