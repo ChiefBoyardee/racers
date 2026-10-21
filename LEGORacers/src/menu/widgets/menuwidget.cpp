@@ -125,7 +125,8 @@ void MenuWidget::SetParent(MenuWidget* p_param)
 	m_parent->m_lastChild = this;
 }
 
-// FUNCTION: LEGORACERS 0x00472b50
+#ifdef COMPAT_MODE
+
 void MenuWidget::RemoveFromParent()
 {
 	if (!(m_flags & 4)) {
@@ -157,6 +158,63 @@ void MenuWidget::RemoveFromParent()
 	m_parent = 0;
 	m_flags &= 0xfb;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00472b50
+__declspec(naked) void MenuWidget::RemoveFromParent()
+{
+	__asm {
+		test byte ptr [ecx + 0x1c], 4
+		je L_RemoveFromParent_0
+		mov eax, dword ptr [ecx + 0x10]
+		xor edx, edx
+		cmp eax, edx
+		push esi
+		je L_RemoveFromParent_1
+		mov esi, dword ptr [ecx + 0x14]
+		mov dword ptr [eax + 0x14], esi
+		jmp L_RemoveFromParent_2
+	L_RemoveFromParent_1:
+		mov eax, dword ptr [ecx + 4]
+		cmp eax, edx
+		je L_RemoveFromParent_2
+		mov esi, dword ptr [ecx + 0x14]
+		mov dword ptr [eax + 8], esi
+	L_RemoveFromParent_2:
+		mov eax, dword ptr [ecx + 0x14]
+		cmp eax, edx
+		je L_RemoveFromParent_3
+		mov esi, dword ptr [ecx + 0x10]
+		mov dword ptr [eax + 0x10], esi
+		mov al, byte ptr [ecx + 0x1c]
+		and al, 0xfb
+		mov dword ptr [ecx + 0x14], edx
+		mov dword ptr [ecx + 0x10], edx
+		mov dword ptr [ecx + 4], edx
+		mov byte ptr [ecx + 0x1c], al
+		pop esi
+		ret
+	L_RemoveFromParent_3:
+		mov eax, dword ptr [ecx + 4]
+		cmp eax, edx
+		je L_RemoveFromParent_4
+		mov esi, dword ptr [ecx + 0x10]
+		mov dword ptr [eax + 0xc], esi
+	L_RemoveFromParent_4:
+		mov al, byte ptr [ecx + 0x1c]
+		mov dword ptr [ecx + 0x14], edx
+		and al, 0xfb
+		mov dword ptr [ecx + 0x10], edx
+		mov dword ptr [ecx + 4], edx
+		mov byte ptr [ecx + 0x1c], al
+		pop esi
+	L_RemoveFromParent_0:
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00472bc0
 void MenuWidget::SetFocus()
@@ -430,7 +488,8 @@ void MenuWidget::SetColor(VisualStateColor* p_param)
 	m_color = p_param->m_color;
 }
 
-// FUNCTION: LEGORACERS 0x00472fd0
+#ifdef COMPAT_MODE
+
 void MenuWidget::ComputeScale(Rect* p_sourceRect, Rect* p_destRect)
 {
 	if (p_destRect->m_left >= p_destRect->m_right) {
@@ -451,6 +510,63 @@ void MenuWidget::ComputeScale(Rect* p_sourceRect, Rect* p_destRect)
 		m_scaleY = sourceHeight / destHeight;
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00472fd0
+__declspec(naked) void MenuWidget::ComputeScale(Rect* p_sourceRect, Rect* p_destRect)
+{
+	__asm {
+		push ebp
+		push esi
+		mov esi, dword ptr [esp + 0x10]
+		push edi
+		mov edi, dword ptr [esp + 0x10]
+		mov edx, dword ptr [esi]
+		mov eax, dword ptr [esi + 8]
+		cmp edx, eax
+		jl L_ComputeScale_0
+		mov dword ptr [ecx + 0x44], 0
+		jmp L_ComputeScale_1
+	L_ComputeScale_0:
+		mov ebp, dword ptr [edi + 8]
+		sub ebp, dword ptr [edi]
+		sub eax, edx
+		mov dword ptr [esp + 0x14], ebp
+		fild dword ptr [esp + 0x14]
+		mov dword ptr [esp + 0x14], eax
+		fild dword ptr [esp + 0x14]
+		fdivp st(1), st(0)
+		fstp dword ptr [ecx + 0x44]
+	L_ComputeScale_1:
+		mov edx, dword ptr [esi + 4]
+		mov eax, dword ptr [esi + 0xc]
+		cmp edx, eax
+		jl L_ComputeScale_2
+		pop edi
+		pop esi
+		mov dword ptr [ecx + 0x48], 0
+		pop ebp
+		ret 8
+	L_ComputeScale_2:
+		mov esi, dword ptr [edi + 0xc]
+		mov ebp, dword ptr [edi + 4]
+		sub esi, ebp
+		sub eax, edx
+		mov dword ptr [esp + 0x14], esi
+		pop edi
+		fild dword ptr [esp + 0x10]
+		mov dword ptr [esp + 0x10], eax
+		pop esi
+		pop ebp
+		fild dword ptr [esp + 8]
+		fdivp st(1), st(0)
+		fstp dword ptr [ecx + 0x48]
+		ret 8
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00473050
 void MenuWidget::ScaleRect(Rect* p_sourceRect, Rect* p_destRect)

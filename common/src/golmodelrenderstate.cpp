@@ -82,7 +82,8 @@ void GolModelRenderState::AddLight(const GolRenderDevice::Light* p_light)
 	}
 }
 
-// FUNCTION: LEGORACERS 0x0040ec00
+#ifdef COMPAT_MODE
+
 void GolModelRenderState::UpdateMaterialCaches()
 {
 	GolMaterial* activeMaterial = m_activeMaterial;
@@ -133,6 +134,128 @@ void GolModelRenderState::UpdateMaterialCaches()
 		}
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x0040ec00
+__declspec(naked) void GolModelRenderState::UpdateMaterialCaches()
+{
+	__asm {
+		sub esp, 0x10
+		push ebx
+		push esi
+		mov esi, dword ptr [ecx + 0x2c]
+		xor ebx, ebx
+		cmp esi, ebx
+		push edi
+		jne L_UpdateMaterialCaches_0
+		mov eax, dword ptr [ecx + 4]
+		xor edx, edx
+		cmp eax, ebx
+		mov byte ptr [ecx + 0x30], bl
+		mov byte ptr [ecx + 0x31], bl
+		mov byte ptr [ecx + 0x32], bl
+		mov byte ptr [ecx + 0x33], 0xff
+		jbe L_UpdateMaterialCaches_1
+		lea eax, [ecx + 0x5c]
+	L_UpdateMaterialCaches_2:
+		mov dword ptr [eax - 4], ebx
+		mov dword ptr [eax], ebx
+		mov dword ptr [eax + 4], ebx
+		mov esi, dword ptr [ecx + 4]
+		inc edx
+		add eax, 0xc
+		cmp edx, esi
+		jb L_UpdateMaterialCaches_2
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x10
+		ret
+	L_UpdateMaterialCaches_0:
+		mov eax, dword ptr [esi + 0x10]
+		xor edx, edx
+		mov dl, byte ptr [ecx + 0xc]
+		mov dword ptr [esp + 0x14], eax
+		and eax, 0xff
+		imul edx, eax
+		shr edx, 8
+		mov byte ptr [ecx + 0x30], dl
+		mov edx, dword ptr [esp + 0x15]
+		xor eax, eax
+		and edx, 0xff
+		mov al, byte ptr [ecx + 0xd]
+		imul eax, edx
+		shr eax, 8
+		mov byte ptr [ecx + 0x31], al
+		xor eax, eax
+		mov al, byte ptr [ecx + 0xe]
+		mov edx, eax
+		mov eax, dword ptr [esp + 0x16]
+		mov edi, eax
+		mov byte ptr [ecx + 0x33], ah
+		and edi, 0xff
+		mov eax, dword ptr [ecx + 4]
+		imul edx, edi
+		shr edx, 8
+		mov byte ptr [ecx + 0x32], dl
+		mov esi, dword ptr [esi + 0xc]
+		xor edi, edi
+		cmp eax, ebx
+		mov dword ptr [esp + 0x14], esi
+		jbe L_UpdateMaterialCaches_1
+		mov edx, dword ptr [esp + 0x15]
+		mov eax, dword ptr [esp + 0x16]
+		push ebp
+		mov ebp, esi
+		and ebp, 0xff
+		and edx, 0xff
+		and eax, 0xff
+		mov dword ptr [esp + 0x10], edx
+		mov dword ptr [esp + 0x18], eax
+		lea eax, [ecx + 0x5c]
+		lea esi, [ecx + 0x3d]
+		jmp L_UpdateMaterialCaches_3
+	L_UpdateMaterialCaches_4:
+		mov edx, dword ptr [esp + 0x10]
+	L_UpdateMaterialCaches_3:
+		xor ebx, ebx
+		add eax, 0xc
+		mov bl, byte ptr [esi - 1]
+		add esi, 4
+		imul ebx, ebp
+		shr ebx, 8
+		mov dword ptr [esp + 0x14], ebx
+		xor ebx, ebx
+		fild dword ptr [esp + 0x14]
+		fstp dword ptr [eax - 0x10]
+		mov bl, byte ptr [esi - 4]
+		imul ebx, edx
+		shr ebx, 8
+		mov dword ptr [esp + 0x14], ebx
+		xor edx, edx
+		fild dword ptr [esp + 0x14]
+		fstp dword ptr [eax - 0xc]
+		mov dl, byte ptr [esi - 3]
+		imul edx, dword ptr [esp + 0x18]
+		shr edx, 8
+		mov dword ptr [esp + 0x14], edx
+		inc edi
+		fild dword ptr [esp + 0x14]
+		fstp dword ptr [eax - 8]
+		cmp edi, dword ptr [ecx + 4]
+		jb L_UpdateMaterialCaches_4
+		pop ebp
+	L_UpdateMaterialCaches_1:
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x10
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x0040ed40
 void GolModelRenderState::Begin(GolD3DRenderDevice*, GolModelEntity* p_model, LegoU32 p_lodIndex)

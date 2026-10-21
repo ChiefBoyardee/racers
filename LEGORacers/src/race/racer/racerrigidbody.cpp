@@ -142,7 +142,8 @@ void RacerCarBody::AddForceAtPoint(GolVec3* p_force, GolVec3* p_point)
 	m_torque.m_z += torque.m_z;
 }
 
-// FUNCTION: LEGORACERS 0x00440bd0
+#ifdef COMPAT_MODE
+
 void RacerCarBody::AddAngularImpulse(GolVec3* p_impulse)
 {
 	GolVec3 local;
@@ -182,6 +183,78 @@ void RacerCarBody::AddAngularImpulse(GolVec3* p_impulse)
 	m_angularMomentum.m_y += world.m_y;
 	m_angularMomentum.m_z += world.m_z;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00440bd0
+__declspec(naked) void RacerCarBody::AddAngularImpulse(GolVec3* p_impulse)
+{
+	__asm {
+		sub esp, 0x24
+		push esi
+		mov esi, ecx
+		lea edx, [esp + 0x10]
+		mov ecx, dword ptr [esi + 4]
+		push edx
+		mov edx, dword ptr [esp + 0x30]
+		mov eax, dword ptr [ecx]
+		push edx
+		call dword ptr [eax + 0x38]
+		fld dword ptr [esi + 0x2c]
+		fmul dword ptr [esp + 0x10]
+		fld dword ptr [esi + 0x30]
+		fmul dword ptr [esp + 0x10]
+		mov ecx, dword ptr [esi + 4]
+		lea edx, [esp + 0x1c]
+		push edx
+		lea edx, [esp + 8]
+		fstp dword ptr [esp + 0xc]
+		fld dword ptr [esi + 0x34]
+		fmul dword ptr [esp + 0x14]
+		push edx
+		fstp dword ptr [esp + 0x14]
+		fld dword ptr [esi + 0x38]
+		fmul dword ptr [esp + 0x1c]
+		faddp st(1), st(0)
+		fld dword ptr [esi + 0x3c]
+		fmul dword ptr [esp + 0x1c]
+		fadd dword ptr [esp + 0x10]
+		fstp dword ptr [esp + 0x10]
+		fld dword ptr [esi + 0x40]
+		fmul dword ptr [esp + 0x1c]
+		fadd dword ptr [esp + 0x14]
+		fstp dword ptr [esp + 0x14]
+		fld dword ptr [esi + 0x44]
+		fmul dword ptr [esp + 0x20]
+		fadd st(0), st(1)
+		fstp dword ptr [esp + 0xc]
+		fstp st(0)
+		fld dword ptr [esi + 0x48]
+		fmul dword ptr [esp + 0x20]
+		fadd dword ptr [esp + 0x10]
+		fstp dword ptr [esp + 0x10]
+		fld dword ptr [esi + 0x4c]
+		fmul dword ptr [esp + 0x20]
+		fadd dword ptr [esp + 0x14]
+		fstp dword ptr [esp + 0x14]
+		mov eax, dword ptr [ecx]
+		call dword ptr [eax + 0x34]
+		fld dword ptr [esp + 0x1c]
+		fadd dword ptr [esi + 0xa4]
+		fstp dword ptr [esi + 0xa4]
+		fld dword ptr [esp + 0x20]
+		fadd dword ptr [esi + 0xa8]
+		fstp dword ptr [esi + 0xa8]
+		fld dword ptr [esp + 0x24]
+		fadd dword ptr [esi + 0xac]
+		fstp dword ptr [esi + 0xac]
+		pop esi
+		add esp, 0x24
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00440cb0
 void RacerCarBody::CancelAngularMomentum(GolVec3* p_direction, GolVec3* p_point)
@@ -235,7 +308,8 @@ void RacerCarBody::CancelAngularMomentum(GolVec3* p_direction, GolVec3* p_point)
 	}
 }
 
-// FUNCTION: LEGORACERS 0x00440da0
+#ifdef COMPAT_MODE
+
 void RacerCarBody::CancelAngularMomentumAlong(GolVec3* p_axis)
 {
 	LegoFloat dot = m_angularMomentum.m_z;
@@ -251,6 +325,46 @@ void RacerCarBody::CancelAngularMomentumAlong(GolVec3* p_axis)
 	m_angularMomentum.m_y -= scaled.m_y;
 	m_angularMomentum.m_z -= scaled.m_z;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00440da0
+__declspec(naked) void RacerCarBody::CancelAngularMomentumAlong(GolVec3* p_axis)
+{
+	__asm {
+		sub esp, 0xc
+		fld dword ptr [ecx + 0xac]
+		mov eax, dword ptr [esp + 0x10]
+		fmul dword ptr [eax + 8]
+		fld dword ptr [ecx + 0xa8]
+		fmul dword ptr [eax + 4]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 0xa4]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fld st(0)
+		fmul dword ptr [eax]
+		fstp dword ptr [esp]
+		fld dword ptr [eax + 4]
+		fmul st(0), st(1)
+		fstp dword ptr [esp + 4]
+		fmul dword ptr [eax + 8]
+		fld dword ptr [ecx + 0xa4]
+		fsub dword ptr [esp]
+		fstp dword ptr [ecx + 0xa4]
+		fld dword ptr [ecx + 0xa8]
+		fsub dword ptr [esp + 4]
+		fstp dword ptr [ecx + 0xa8]
+		fld dword ptr [ecx + 0xac]
+		fsub st(0), st(1)
+		fstp dword ptr [ecx + 0xac]
+		fstp st(0)
+		add esp, 0xc
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00440e10 FOLDED
 void RacerRigidBody::Update(LegoS32 p_elapsedMs)

@@ -141,7 +141,8 @@ void MenuIcon::AttachToParent(MenuIcon* p_parent)
 	m_attached = TRUE;
 }
 
-// FUNCTION: LEGORACERS 0x00471f00
+#ifdef COMPAT_MODE
+
 void MenuIcon::DetachFromParent()
 {
 	if (!(m_flags & 4)) {
@@ -173,6 +174,59 @@ void MenuIcon::DetachFromParent()
 	m_parent = NULL;
 	m_attached = FALSE;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00471f00
+__declspec(naked) void MenuIcon::DetachFromParent()
+{
+	__asm {
+		test byte ptr [ecx + 0x1c], 4
+		je L_DetachFromParent_0
+		mov eax, dword ptr [ecx + 0x5c]
+		xor edx, edx
+		cmp eax, edx
+		push esi
+		je L_DetachFromParent_1
+		mov esi, dword ptr [ecx + 0x60]
+		mov dword ptr [eax + 0x60], esi
+		jmp L_DetachFromParent_2
+	L_DetachFromParent_1:
+		mov eax, dword ptr [ecx + 0x58]
+		cmp eax, edx
+		je L_DetachFromParent_2
+		mov esi, dword ptr [ecx + 0x60]
+		mov dword ptr [eax + 0x64], esi
+	L_DetachFromParent_2:
+		mov eax, dword ptr [ecx + 0x60]
+		cmp eax, edx
+		je L_DetachFromParent_3
+		mov esi, dword ptr [ecx + 0x5c]
+		mov dword ptr [eax + 0x5c], esi
+		mov dword ptr [ecx + 0x60], edx
+		mov dword ptr [ecx + 0x5c], edx
+		mov dword ptr [ecx + 0x58], edx
+		mov byte ptr [ecx + 0x12d], dl
+		pop esi
+		ret
+	L_DetachFromParent_3:
+		mov eax, dword ptr [ecx + 0x58]
+		cmp eax, edx
+		je L_DetachFromParent_4
+		mov esi, dword ptr [ecx + 0x5c]
+		mov dword ptr [eax + 0x68], esi
+	L_DetachFromParent_4:
+		mov dword ptr [ecx + 0x60], edx
+		mov dword ptr [ecx + 0x5c], edx
+		mov dword ptr [ecx + 0x58], edx
+		mov byte ptr [ecx + 0x12d], dl
+		pop esi
+	L_DetachFromParent_0:
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00471f70
 MenuIcon* MenuIcon::FindRoot()

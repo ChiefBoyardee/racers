@@ -277,7 +277,8 @@ void RaceHud::ClipTriangleRight(
 	ClipTriangleBottom(p_v0, p_v1, p_v2);
 }
 
-// FUNCTION: LEGORACERS 0x004244f0
+#ifdef COMPAT_MODE
+
 void RaceHud::ClipTriangleBottom(
 	const GolRenderDevice::TexturedVertex* p_v0,
 	const GolRenderDevice::TexturedVertex* p_v1,
@@ -341,6 +342,189 @@ void RaceHud::ClipTriangleBottom(
 
 	m_renderer->DrawTriangle(p_v0, p_v1, p_v2, m_mapMaterial, 0);
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x004244f0
+__declspec(naked) void RaceHud::ClipTriangleBottom(
+	const GolRenderDevice::TexturedVertex* p_v0,
+	const GolRenderDevice::TexturedVertex* p_v1,
+	const GolRenderDevice::TexturedVertex* p_v2
+)
+{
+	__asm {
+		mov edx, dword ptr [esp + 8]
+		sub esp, 0x30
+		fld dword ptr [edx + 4]
+		push ebx
+		mov ebx, ecx
+		fcomp dword ptr [ebx + 0x134]
+		push esi
+		push edi
+		fnstsw ax
+		test ah, 0x41
+		jne L_ClipTriangleBottom_0
+		mov edi, dword ptr [esp + 0x40]
+		fld dword ptr [edi + 4]
+		fcomp dword ptr [ebx + 0x134]
+		fnstsw ax
+		test ah, 0x41
+		jne L_ClipTriangleBottom_1
+		mov esi, dword ptr [esp + 0x48]
+		fld dword ptr [esi + 4]
+		fcomp dword ptr [ebx + 0x134]
+		fnstsw ax
+		test ah, 0x41
+		je L_ClipTriangleBottom_2
+		jmp L_ClipTriangleBottom_3
+	L_ClipTriangleBottom_1:
+		mov esi, edi
+		mov edi, edx
+		mov edx, dword ptr [esp + 0x48]
+		jmp L_ClipTriangleBottom_3
+	L_ClipTriangleBottom_0:
+		mov esi, dword ptr [esp + 0x48]
+		fld dword ptr [esi + 4]
+		fcomp dword ptr [ebx + 0x134]
+		fnstsw ax
+		test ah, 0x41
+		jne L_ClipTriangleBottom_4
+		mov edi, esi
+		mov esi, edx
+		mov edx, dword ptr [esp + 0x40]
+		jmp L_ClipTriangleBottom_3
+	L_ClipTriangleBottom_4:
+		mov edi, dword ptr [esp + 0x40]
+	L_ClipTriangleBottom_3:
+		fld dword ptr [edi + 4]
+		fcomp dword ptr [ebx + 0x134]
+		fnstsw ax
+		test ah, 0x41
+		jne L_ClipTriangleBottom_5
+		fld dword ptr [ebx + 0x134]
+		mov eax, dword ptr [edi + 0x14]
+		mov dword ptr [esp + 0x2c], 0
+		fst dword ptr [esp + 0x28]
+		fstp dword ptr [esp + 0x10]
+		fld dword ptr [esi + 4]
+		fsub dword ptr [ebx + 0x134]
+		fld dword ptr [esi + 4]
+		fsub dword ptr [edi + 4]
+		mov dword ptr [esp + 0x38], eax
+		mov dword ptr [esp + 0x20], eax
+		mov dword ptr [esp + 0x14], 0
+		fdivr st(0), st(1)
+		fld dword ptr [edi]
+		fsub dword ptr [esi]
+		fmul st(0), st(1)
+		fadd dword ptr [esi]
+		fstp dword ptr [esp + 0x24]
+		fld dword ptr [edi + 0xc]
+		fsub dword ptr [esi + 0xc]
+		fmul st(0), st(1)
+		fadd dword ptr [esi + 0xc]
+		fstp dword ptr [esp + 0x30]
+		fld dword ptr [edi + 0x10]
+		fsub dword ptr [esi + 0x10]
+		fmul st(0), st(1)
+		fadd dword ptr [esi + 0x10]
+		fstp dword ptr [esp + 0x34]
+		fstp st(0)
+		fld dword ptr [edx + 4]
+		fcomp dword ptr [ebx + 0x134]
+		fnstsw ax
+		test ah, 0x41
+		jne L_ClipTriangleBottom_6
+		fld dword ptr [esi + 4]
+		fsub dword ptr [edx + 4]
+		fdivp st(1), st(0)
+		fld dword ptr [edx]
+		fsub dword ptr [esi]
+		fmul st(0), st(1)
+		fadd dword ptr [esi]
+		fstp dword ptr [esp + 0xc]
+		fld dword ptr [edx + 0xc]
+		fsub dword ptr [esi + 0xc]
+		fmul st(0), st(1)
+		fadd dword ptr [esi + 0xc]
+		fstp dword ptr [esp + 0x18]
+		fld dword ptr [edx + 0x10]
+		fsub dword ptr [esi + 0x10]
+		fmul st(0), st(1)
+		fadd dword ptr [esi + 0x10]
+		fstp dword ptr [esp + 0x1c]
+		fstp st(0)
+		jmp L_ClipTriangleBottom_7
+	L_ClipTriangleBottom_6:
+		fstp st(0)
+		fld dword ptr [edx + 4]
+		fsub dword ptr [ebx + 0x134]
+		fld dword ptr [edx + 4]
+		fsub dword ptr [edi + 4]
+		mov ecx, dword ptr [ebx]
+		push 0
+		fdivp st(1), st(0)
+		fld dword ptr [edi]
+		fsub dword ptr [edx]
+		fmul st(0), st(1)
+		fadd dword ptr [edx]
+		fstp dword ptr [esp + 0x10]
+		fld dword ptr [edi + 0xc]
+		fsub dword ptr [edx + 0xc]
+		fmul st(0), st(1)
+		fadd dword ptr [edx + 0xc]
+		fstp dword ptr [esp + 0x1c]
+		fld dword ptr [edi + 0x10]
+		fsub dword ptr [edx + 0x10]
+		mov edi, dword ptr [ebx + 0x118]
+		push edi
+		push edx
+		fmul st(0), st(1)
+		fadd dword ptr [edx + 0x10]
+		lea edx, [esp + 0x18]
+		push edx
+		push esi
+		fstp dword ptr [esp + 0x30]
+		mov eax, dword ptr [ecx]
+		fstp st(0)
+		call dword ptr [eax + 0x84]
+	L_ClipTriangleBottom_7:
+		mov edx, dword ptr [ebx + 0x118]
+		mov ecx, dword ptr [ebx]
+		push 0
+		push edx
+		mov eax, dword ptr [ecx]
+		lea edx, [esp + 0x14]
+		push esi
+		push edx
+		lea edx, [esp + 0x34]
+		push edx
+		call dword ptr [eax + 0x84]
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x30
+		ret 0xc
+	L_ClipTriangleBottom_5:
+		mov ecx, dword ptr [ebx]
+		mov ebx, dword ptr [ebx + 0x118]
+		push 0
+		push ebx
+		mov eax, dword ptr [ecx]
+		push esi
+		push edx
+		push edi
+		call dword ptr [eax + 0x84]
+	L_ClipTriangleBottom_2:
+		pop edi
+		pop esi
+		pop ebx
+		add esp, 0x30
+		ret 0xc
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x004246d0 FOLDED
 void RaceHud::FormatTime(LegoChar* p_buffer, LegoU32 p_time)

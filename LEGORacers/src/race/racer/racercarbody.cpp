@@ -2755,7 +2755,8 @@ LegoBool32 RacerCarBody::TestCachedPlane(WheelProbe* p_probe, CollisionCacheReco
 	return GolMath::PointInTriangle(point, p_record->m_plane.GetFloatData());
 }
 
-// FUNCTION: LEGORACERS 0x00448c70
+#ifdef COMPAT_MODE
+
 void RacerCarBody::ComputeWheelPositions()
 {
 	GolOrientedEntity* entity = &m_physicsEntity;
@@ -2791,6 +2792,92 @@ void RacerCarBody::ComputeWheelPositions()
 	points[2].m_wheelPosition.m_y = points[0].m_wheelPosition.m_y - lengthOffset.m_y;
 	points[2].m_wheelPosition.m_z = points[0].m_wheelPosition.m_z - lengthOffset.m_z;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00448c70
+__declspec(naked) void RacerCarBody::ComputeWheelPositions()
+{
+	__asm {
+		sub esp, 0x1c
+		push ebx
+		push esi
+		mov esi, ecx
+		push edi
+		mov eax, dword ptr [esi + 0xe4]
+		lea edi, [esi + 0xe4]
+		lea ebx, [esi + 0x214]
+		lea ecx, [esi + 0x358]
+		push ebx
+		push ecx
+		mov ecx, edi
+		call dword ptr [eax + 0x2c]
+		mov ecx, dword ptr [esi + 0x368]
+		mov edx, dword ptr [edi + 0x2c]
+		fld dword ptr [edi + 0x28]
+		mov dword ptr [esp + 0xc], ecx
+		mov dword ptr [esp + 0x14], edx
+		fmul dword ptr [esp + 0xc]
+		fld dword ptr [esp + 0x14]
+		mov eax, dword ptr [edi + 0x30]
+		mov ecx, dword ptr [esi + 0x364]
+		fmul dword ptr [esp + 0xc]
+		mov dword ptr [esp + 0x18], eax
+		mov edx, dword ptr [edi + 0x38]
+		mov dword ptr [esp + 0x20], edx
+		mov eax, dword ptr [edi + 0x3c]
+		fstp dword ptr [esp + 0x14]
+		fld dword ptr [esp + 0x18]
+		fmul dword ptr [esp + 0xc]
+		mov dword ptr [esp + 0xc], ecx
+		mov dword ptr [esp + 0x24], eax
+		fstp dword ptr [esp + 0x18]
+		fld dword ptr [edi + 0x34]
+		fmul dword ptr [esp + 0xc]
+		fld dword ptr [esp + 0x20]
+		fmul dword ptr [esp + 0xc]
+		pop edi
+		fstp dword ptr [esp + 0x1c]
+		fld dword ptr [esp + 0x20]
+		fmul dword ptr [esp + 8]
+		fstp dword ptr [esp + 0x20]
+		fld dword ptr [ebx]
+		fsub st(0), st(1)
+		fstp dword ptr [esi + 0x1a4]
+		fstp st(0)
+		fld dword ptr [ebx + 4]
+		fsub dword ptr [esp + 0x1c]
+		fstp dword ptr [esi + 0x1a8]
+		fld dword ptr [ebx + 8]
+		fsub dword ptr [esp + 0x20]
+		fstp dword ptr [esi + 0x1ac]
+		fld dword ptr [ebx]
+		fsub st(0), st(1)
+		fstp dword ptr [esi + 0x2f4]
+		fld dword ptr [ebx + 4]
+		fsub dword ptr [esp + 0x10]
+		fstp dword ptr [esi + 0x2f8]
+		fld dword ptr [ebx + 8]
+		fsub dword ptr [esp + 0x14]
+		fstp dword ptr [esi + 0x2fc]
+		fld dword ptr [esi + 0x1a4]
+		fsub st(0), st(1)
+		fstp dword ptr [esi + 0x284]
+		fstp st(0)
+		fld dword ptr [esi + 0x1a8]
+		fsub dword ptr [esp + 0x10]
+		fstp dword ptr [esi + 0x288]
+		fld dword ptr [esi + 0x1ac]
+		fsub dword ptr [esp + 0x14]
+		fstp dword ptr [esi + 0x28c]
+		pop esi
+		pop ebx
+		add esp, 0x1c
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x00448d90
 void RacerCarBody::ComputeWheelRaysLocal(GolBoundedEntity* p_world, LegoFloat p_sweepHeight, LegoFloat p_sweepDistance)
