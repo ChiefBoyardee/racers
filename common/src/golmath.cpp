@@ -1,5 +1,7 @@
 #include "golmath.h"
 
+#include "compat.h"
+
 #include <math.h>
 
 #ifdef BUILDING_GOL
