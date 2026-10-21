@@ -62,14 +62,34 @@ void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& 
 	}
 }
 
-// FUNCTION: LEGORACERS 0x00449170
+#ifdef COMPAT_MODE
+
 void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
 {
 	*p_sin = static_cast<LegoFloat>(sin(p_angle));
 	*p_cos = static_cast<LegoFloat>(cos(p_angle));
 }
 
-// FUNCTION: LEGORACERS 0x00449190
+#else
+
+// FUNCTION: LEGORACERS 0x00449170
+__declspec(naked) void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
+{
+	__asm {
+		fld dword ptr [esp + 4]
+		fsincos
+		mov ecx, dword ptr [esp + 0ch]
+		mov edx, dword ptr [esp + 8]
+		fstp dword ptr [ecx]
+		fstp dword ptr [edx]
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrix3(const LegoFloat* p_left, const LegoFloat* p_right, LegoFloat* p_dest)
 {
 	LegoFloat value = p_left[1] * p_right[3];
@@ -117,6 +137,102 @@ void GolMath::MultiplyMatrix3(const LegoFloat* p_left, const LegoFloat* p_right,
 	value += p_left[6] * p_right[2];
 	p_dest[8] = value;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00449190
+__declspec(naked) void GolMath::MultiplyMatrix3(const LegoFloat* p_left, const LegoFloat* p_right, LegoFloat* p_dest)
+{
+	__asm {
+		mov eax, dword ptr [esp + 4]
+		mov ecx, dword ptr [esp + 8]
+		mov edx, dword ptr [esp + 0ch]
+		fld dword ptr [eax + 4]
+		fmul dword ptr [ecx + 0ch]
+		fld dword ptr [eax + 8]
+		fmul dword ptr [ecx + 18h]
+		faddp st(1), st(0)
+		fld dword ptr [eax]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx]
+		fld dword ptr [ecx + 10h]
+		fmul dword ptr [eax + 4]
+		fld dword ptr [ecx + 1ch]
+		fmul dword ptr [eax + 8]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 4]
+		fld dword ptr [ecx + 20h]
+		fmul dword ptr [eax + 8]
+		fld dword ptr [eax + 4]
+		fmul dword ptr [ecx + 14h]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 8]
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 0ch]
+		fld dword ptr [eax + 14h]
+		fmul dword ptr [ecx + 18h]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 0ch]
+		fld dword ptr [eax + 14h]
+		fmul dword ptr [ecx + 1ch]
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx + 4]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 10h]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 10h]
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx + 8]
+		fld dword ptr [ecx + 20h]
+		fmul dword ptr [eax + 14h]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 14h]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 14h]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 18h]
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [eax + 1ch]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 18h]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 18h]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [eax + 18h]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 1ch]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 10h]
+		fmul dword ptr [eax + 1ch]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 1ch]
+		fld dword ptr [eax + 1ch]
+		fmul dword ptr [ecx + 14h]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 20h]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 18h]
+		fmul dword ptr [ecx + 8]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 20h]
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: GOLDP 0x1002f4e0
 // FUNCTION: LEGORACERS 0x00449280
@@ -531,7 +647,8 @@ void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3*
 	p_dest->m_z = z;
 }
 
-// FUNCTION: LEGORACERS 0x00449bf0
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrixByTranspose(const LegoFloat* p_left, const LegoFloat* p_right, LegoFloat* p_dest)
 {
 	LegoFloat value = p_left[1] * p_right[1];
@@ -579,3 +696,103 @@ void GolMath::MultiplyMatrixByTranspose(const LegoFloat* p_left, const LegoFloat
 	value += p_left[6] * p_right[6];
 	p_dest[8] = value;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00449bf0
+__declspec(naked) void GolMath::MultiplyMatrixByTranspose(
+	const LegoFloat* p_left,
+	const LegoFloat* p_right,
+	LegoFloat* p_dest
+)
+{
+	__asm {
+		mov eax, dword ptr [esp + 4]
+		mov ecx, dword ptr [esp + 8]
+		mov edx, dword ptr [esp + 0ch]
+		fld dword ptr [eax + 4]
+		fmul dword ptr [ecx + 4]
+		fld dword ptr [eax + 8]
+		fmul dword ptr [ecx + 8]
+		faddp st(1), st(0)
+		fld dword ptr [eax]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx]
+		fld dword ptr [ecx + 10h]
+		fmul dword ptr [eax + 4]
+		fld dword ptr [ecx + 14h]
+		fmul dword ptr [eax + 8]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 4]
+		fld dword ptr [ecx + 20h]
+		fmul dword ptr [eax + 8]
+		fld dword ptr [eax + 4]
+		fmul dword ptr [ecx + 1ch]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 18h]
+		fmul dword ptr [eax]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 8]
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 4]
+		fld dword ptr [eax + 14h]
+		fmul dword ptr [ecx + 8]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 0ch]
+		fld dword ptr [eax + 14h]
+		fmul dword ptr [ecx + 14h]
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx + 0ch]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 10h]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 10h]
+		fld dword ptr [eax + 0ch]
+		fmul dword ptr [ecx + 18h]
+		fld dword ptr [ecx + 20h]
+		fmul dword ptr [eax + 14h]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 10h]
+		fmul dword ptr [ecx + 1ch]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 14h]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 8]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [eax + 1ch]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 18h]
+		fmul dword ptr [ecx]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 18h]
+		fld dword ptr [ecx + 0ch]
+		fmul dword ptr [eax + 18h]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 14h]
+		faddp st(1), st(0)
+		fld dword ptr [ecx + 10h]
+		fmul dword ptr [eax + 1ch]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 1ch]
+		fld dword ptr [eax + 1ch]
+		fmul dword ptr [ecx + 1ch]
+		fld dword ptr [eax + 20h]
+		fmul dword ptr [ecx + 20h]
+		faddp st(1), st(0)
+		fld dword ptr [eax + 18h]
+		fmul dword ptr [ecx + 18h]
+		faddp st(1), st(0)
+		fstp dword ptr [edx + 20h]
+		ret
+	}
+}
+
+#endif
