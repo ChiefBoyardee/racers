@@ -514,7 +514,8 @@ void RaceState::InitializeRacerVisuals(GolD3DRenderDevice* p_renderer, GolExport
 	}
 }
 
-// FUNCTION: LEGORACERS 0x0043beb0
+#ifdef COMPAT_MODE
+
 void RaceState::RecordBestTimes(LegoRacers::Context* p_context)
 {
 	LegoU32 bestLapTime = c_invalidTime;
@@ -573,6 +574,119 @@ void RaceState::RecordBestTimes(LegoRacers::Context* p_context)
 		}
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x0043beb0
+__declspec(naked) void RaceState::RecordBestTimes(LegoRacers::Context* p_context)
+{
+	__asm {
+		sub esp, 0x18
+		mov eax, dword ptr [ecx + 0x144]
+		push ebx
+		push ebp
+		xor ebx, ebx
+		or ebp, 0xffffffff
+		cmp eax, ebx
+		mov dword ptr [esp + 0x18], ecx
+		mov dword ptr [esp + 8], ebp
+		mov dword ptr [esp + 0x14], ebp
+		mov dword ptr [esp + 0x1c], eax
+		jbe L_RecordBestTimes_0
+		mov eax, dword ptr [esp + 0x24]
+		push esi
+		add eax, 0x114
+		push edi
+		mov dword ptr [esp + 0x18], ebx
+		mov dword ptr [esp + 0x14], eax
+	L_RecordBestTimes_5:
+		mov edx, dword ptr [esp + 0x14]
+		cmp dword ptr [edx], 0
+		jne L_RecordBestTimes_1
+		mov eax, dword ptr [ecx + 0x140]
+		mov edx, dword ptr [esp + 0x18]
+		add edx, eax
+		xor eax, eax
+		mov al, byte ptr [ecx + 0x29c]
+		cmp dword ptr [edx + 0xce4], eax
+		jb L_RecordBestTimes_1
+		xor esi, esi
+		test eax, eax
+		jbe L_RecordBestTimes_2
+		add edx, 0xcec
+		mov edi, eax
+	L_RecordBestTimes_4:
+		mov eax, dword ptr [edx]
+		cmp eax, ebp
+		jae L_RecordBestTimes_3
+		mov ecx, dword ptr [esp + 0x20]
+		mov ebp, eax
+		mov dword ptr [esp + 0x1c], ebx
+	L_RecordBestTimes_3:
+		add esi, eax
+		add edx, 4
+		dec edi
+		jne L_RecordBestTimes_4
+	L_RecordBestTimes_2:
+		cmp esi, dword ptr [esp + 0x10]
+		jae L_RecordBestTimes_1
+		mov dword ptr [esp + 0x10], esi
+	L_RecordBestTimes_1:
+		mov esi, dword ptr [esp + 0x14]
+		mov edx, dword ptr [esp + 0x18]
+		mov eax, dword ptr [esp + 0x24]
+		inc ebx
+		add esi, 0x5c
+		add edx, 0xe34
+		cmp ebx, eax
+		mov dword ptr [esp + 0x14], esi
+		mov dword ptr [esp + 0x18], edx
+		jb L_RecordBestTimes_5
+		pop edi
+		cmp ebp, -1
+		pop esi
+		jae L_RecordBestTimes_6
+		mov eax, dword ptr [esp + 0x24]
+		mov ecx, dword ptr [eax + 0xd8]
+		lea eax, [eax + ecx*4 + 0x98]
+		mov ecx, dword ptr [eax]
+		test ecx, ecx
+		je L_RecordBestTimes_7
+		cmp ebp, ecx
+		ja L_RecordBestTimes_6
+	L_RecordBestTimes_7:
+		mov ecx, dword ptr [esp + 0x14]
+		mov dword ptr [eax], ebp
+		mov eax, dword ptr [esp + 0x24]
+		mov edx, dword ptr [eax + 0xd8]
+		mov dword ptr [eax + edx*4 + 0xa8], ecx
+	L_RecordBestTimes_6:
+		cmp dword ptr [esp + 8], -1
+		jae L_RecordBestTimes_0
+		mov eax, dword ptr [esp + 0x24]
+		mov edx, dword ptr [eax + 0xd8]
+		mov ecx, dword ptr [eax + edx*4 + 0xb8]
+		lea eax, [eax + edx*4 + 0xb8]
+		test ecx, ecx
+		je L_RecordBestTimes_8
+		cmp dword ptr [esp + 8], ecx
+		ja L_RecordBestTimes_0
+	L_RecordBestTimes_8:
+		mov ecx, dword ptr [esp + 8]
+		mov dword ptr [eax], ecx
+		mov eax, dword ptr [esp + 0x24]
+		mov ecx, dword ptr [esp + 0x14]
+		mov edx, dword ptr [eax + 0xd8]
+		mov dword ptr [eax + edx*4 + 0xc8], ecx
+	L_RecordBestTimes_0:
+		pop ebp
+		pop ebx
+		add esp, 0x18
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x0043bff0
 void RaceState::DrawRacersTransparent(GolD3DRenderDevice* p_renderer)
@@ -1135,7 +1249,8 @@ LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 	return result;
 }
 
-// FUNCTION: LEGORACERS 0x0043cf30
+#ifdef COMPAT_MODE
+
 void RaceState::ComputeStandingsDeltas(Racer* p_racer, Racer::StandingsDeltaEntry* p_entries)
 {
 	LegoU32 lapCount = m_setup.m_lapCount;
@@ -1213,6 +1328,135 @@ void RaceState::ComputeStandingsDeltas(Racer* p_racer, Racer::StandingsDeltaEntr
 		} while (--remaining);
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x0043cf30
+__declspec(naked) void RaceState::ComputeStandingsDeltas(Racer* p_racer, Racer::StandingsDeltaEntry* p_entries)
+{
+	__asm {
+		push ecx
+		push ebx
+		push esi
+		push edi
+		mov edi, dword ptr [esp + 0x14]
+		xor edx, edx
+		xor ebx, ebx
+		mov dl, byte ptr [ecx + 0x29c]
+		mov eax, dword ptr [edi + 0xce4]
+		xor esi, esi
+		cmp eax, edx
+		mov dword ptr [esp + 0xc], esi
+		jae L_ComputeStandingsDeltas_0
+		mov eax, dword ptr [ecx + 0x144]
+		xor edx, edx
+		cmp eax, ebx
+		jbe L_ComputeStandingsDeltas_1
+		mov eax, dword ptr [esp + 0x18]
+		add eax, 8
+	L_ComputeStandingsDeltas_2:
+		mov dword ptr [eax - 8], ebx
+		mov dword ptr [eax - 4], ebx
+		mov dword ptr [eax], ebx
+		mov esi, dword ptr [ecx + 0x144]
+		inc edx
+		add eax, 0xc
+		cmp edx, esi
+		jb L_ComputeStandingsDeltas_2
+		pop edi
+		pop esi
+		pop ebx
+		pop ecx
+		ret 8
+	L_ComputeStandingsDeltas_0:
+		cmp edx, ebx
+		push ebp
+		jbe L_ComputeStandingsDeltas_3
+		lea eax, [edi + 0xcec]
+	L_ComputeStandingsDeltas_4:
+		mov ebp, dword ptr [eax]
+		add eax, 4
+		add esi, ebp
+		dec edx
+		jne L_ComputeStandingsDeltas_4
+		mov dword ptr [esp + 0x10], esi
+	L_ComputeStandingsDeltas_3:
+		cmp dword ptr [ecx + 0x144], ebx
+		jbe L_ComputeStandingsDeltas_5
+		mov edx, dword ptr [esp + 0x1c]
+		xor ebp, ebp
+		lea esi, [edx + 4]
+		jmp L_ComputeStandingsDeltas_6
+	L_ComputeStandingsDeltas_12:
+		mov edi, dword ptr [esp + 0x18]
+	L_ComputeStandingsDeltas_6:
+		mov eax, dword ptr [ecx + 0x140]
+		add eax, ebp
+		mov dword ptr [esi - 4], eax
+		mov dword ptr [esi + 4], 1
+		mov edx, dword ptr [ecx + 0x140]
+		add edx, ebp
+		cmp edx, edi
+		jne L_ComputeStandingsDeltas_7
+		mov dword ptr [esi], 0
+		jmp L_ComputeStandingsDeltas_8
+	L_ComputeStandingsDeltas_7:
+		xor eax, eax
+		mov al, byte ptr [ecx + 0x29c]
+		mov edi, eax
+		mov eax, dword ptr [edx + 0xce4]
+		cmp eax, edi
+		jae L_ComputeStandingsDeltas_9
+		mov edx, dword ptr [edx + 0xd00]
+		add edx, 0x7ffffff9
+		mov dword ptr [esi], edx
+		jmp L_ComputeStandingsDeltas_8
+	L_ComputeStandingsDeltas_9:
+		xor eax, eax
+		test edi, edi
+		jbe L_ComputeStandingsDeltas_10
+		add edx, 0xcec
+	L_ComputeStandingsDeltas_11:
+		add eax, dword ptr [edx]
+		add edx, 4
+		dec edi
+		jne L_ComputeStandingsDeltas_11
+	L_ComputeStandingsDeltas_10:
+		sub eax, dword ptr [esp + 0x10]
+		mov dword ptr [esi], eax
+	L_ComputeStandingsDeltas_8:
+		mov eax, dword ptr [ecx + 0x144]
+		inc ebx
+		add ebp, 0xe34
+		add esi, 0xc
+		cmp ebx, eax
+		jb L_ComputeStandingsDeltas_12
+		xor ebx, ebx
+	L_ComputeStandingsDeltas_5:
+		mov ecx, dword ptr [ecx + 0x144]
+		pop ebp
+		cmp ecx, 6
+		jae L_ComputeStandingsDeltas_1
+		mov edx, dword ptr [esp + 0x18]
+		lea eax, [ecx + ecx*2]
+		lea edx, [edx + eax*4 + 8]
+		mov eax, 6
+		sub eax, ecx
+	L_ComputeStandingsDeltas_13:
+		mov dword ptr [edx], ebx
+		add edx, 0xc
+		dec eax
+		jne L_ComputeStandingsDeltas_13
+	L_ComputeStandingsDeltas_1:
+		pop edi
+		pop esi
+		pop ebx
+		pop ecx
+		ret 8
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x0043d070
 RaceRouteRecord* RaceState::FindNearestRouteRecord(Racer* p_racer)

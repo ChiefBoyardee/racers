@@ -347,7 +347,8 @@ void RaceCameraController::Initialize(GolCamera* p_camera, GolD3DRenderDevice* p
 	m_targetFov = p_camera->GetFov();
 }
 
-// FUNCTION: LEGORACERS 0x00428230
+#ifdef COMPAT_MODE
+
 void RaceCameraController::SetRacer(Racer* p_racer)
 {
 	if (m_racer != p_racer) {
@@ -362,6 +363,43 @@ void RaceCameraController::SetRacer(Racer* p_racer)
 		m_viewDirection.m_z = entity->GetOrientation().m_rows[0].m_z;
 	}
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00428230
+__declspec(naked) void RaceCameraController::SetRacer(Racer* p_racer)
+{
+	__asm {
+		mov eax, dword ptr [esp + 4]
+		push esi
+		mov esi, ecx
+		cmp dword ptr [esi + 0xd4], eax
+		je L_SetRacer_0
+		mov dword ptr [esi + 0xd4], eax
+		mov ecx, dword ptr [eax + 0x5c]
+		lea edx, [esi + 0xe4]
+		mov eax, dword ptr [ecx]
+		push edx
+		call dword ptr [eax + 4]
+		mov eax, dword ptr [esi + 0xd4]
+		mov ecx, dword ptr [eax + 0xc84]
+		mov dword ptr [esi + 0x120], 0x3f800000
+		and ecx, 1
+		mov dword ptr [esi + 0x11c], ecx
+		mov eax, dword ptr [eax + 0x5c]
+		mov edx, dword ptr [eax + 0x28]
+		mov dword ptr [esi + 0xd8], edx
+		mov ecx, dword ptr [eax + 0x2c]
+		mov dword ptr [esi + 0xdc], ecx
+		mov edx, dword ptr [eax + 0x30]
+		mov dword ptr [esi + 0xe0], edx
+	L_SetRacer_0:
+		pop esi
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x004282a0
 void RaceCameraController::SetOrientation(GolVec3* p_direction, GolVec3* p_up)
