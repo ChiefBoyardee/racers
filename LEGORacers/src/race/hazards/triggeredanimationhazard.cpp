@@ -30,7 +30,8 @@ TriggeredAnimationHazard::~TriggeredAnimationHazard()
 	Reset();
 }
 
-// FUNCTION: LEGORACERS 0x0048edd0
+#ifdef COMPAT_MODE
+
 void TriggeredAnimationHazard::ClearFields()
 {
 	m_triggerId = -1;
@@ -41,6 +42,30 @@ void TriggeredAnimationHazard::ClearFields()
 	m_collider = NULL;
 	m_unk0x24.Clear();
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x0048edd0
+__declspec(naked) void TriggeredAnimationHazard::ClearFields()
+{
+	__asm {
+		xor eax, eax
+		mov dword ptr [ecx + 8], 0xffffffff
+		mov dword ptr [ecx + 0x10], eax
+		mov dword ptr [ecx + 0x14], eax
+		mov dword ptr [ecx + 0x18], eax
+		mov dword ptr [ecx + 0x1c], eax
+		mov dword ptr [ecx + 0x20], eax
+		lea eax, [ecx + 0x24]
+		xor ecx, ecx
+		mov dword ptr [eax], ecx
+		mov dword ptr [eax + 4], ecx
+		mov dword ptr [eax + 8], ecx
+		ret
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x0048ee00
 void TriggeredAnimationHazard::Load(HazardContext* p_context, GolFileParser* p_parser)

@@ -503,7 +503,8 @@ LegoBool32 MenuWidget::ClipRect(Rect* p_rect, Rect* p_arg)
 	return TRUE;
 }
 
-// FUNCTION: LEGORACERS 0x00473160
+#ifdef COMPAT_MODE
+
 Rect* MenuWidget::TranslateRectByOffset(Rect* p_rect)
 {
 	LegoS32 top = m_offsetY - m_rect.m_top + p_rect->m_top;
@@ -518,6 +519,47 @@ Rect* MenuWidget::TranslateRectByOffset(Rect* p_rect)
 
 	return p_rect;
 }
+
+#else
+
+// FUNCTION: LEGORACERS 0x00473160
+__declspec(naked) Rect* MenuWidget::TranslateRectByOffset(Rect* p_rect)
+{
+	__asm {
+		mov eax, dword ptr [esp + 4]
+		mov edx, dword ptr [ecx + 0x50]
+		push ebx
+		push ebp
+		mov ebp, dword ptr [ecx + 0x34]
+		push esi
+		mov esi, dword ptr [ecx + 0x4c]
+		mov ebx, dword ptr [eax + 4]
+		push edi
+		mov edi, dword ptr [ecx + 0x38]
+		mov ecx, dword ptr [eax + 8]
+		sub edx, edi
+		mov edi, dword ptr [eax]
+		sub esi, ebp
+		add esi, edi
+		sub ecx, edi
+		mov edi, dword ptr [eax + 0xc]
+		add edx, ebx
+		sub edi, ebx
+		add ecx, esi
+		mov dword ptr [eax], esi
+		add edi, edx
+		mov dword ptr [eax + 4], edx
+		mov dword ptr [eax + 8], ecx
+		mov dword ptr [eax + 0xc], edi
+		pop edi
+		pop esi
+		pop ebp
+		pop ebx
+		ret 4
+	}
+}
+
+#endif
 
 // FUNCTION: LEGORACERS 0x004731b0
 void MenuWidget::ScreenToLocal(undefined4& p_x, undefined4& p_y)
