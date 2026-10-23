@@ -4472,15 +4472,14 @@ void GolD3DRenderDevice::FUN_1000cf90(LegoU32 p_outputFirst, LegoU32 p_firstVert
 	cacheEnd->m_unk0x10 = savedCacheIndex;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x1000d210
 void GolD3DRenderDevice::FUN_1000d210(LegoU32 p_outputFirst, LegoU32 p_firstVertex, LegoU32 p_vertexCount)
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
-	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
 	const GolVec3* normal = m_sourceNormals + p_firstVertex;
 	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
+	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
 
 	for (; position < positionEnd; position++, normal++, uv++, vertex++) {
 		vertex->m_x = (m_currentMatrix->m_m[0][0] * position->m_x) * m_currentScale;
@@ -4521,185 +4520,14 @@ void GolD3DRenderDevice::FUN_1000d210(LegoU32 p_outputFirst, LegoU32 p_firstVert
 	m_renderState->ProcessVertices(&m_drawCommand);
 }
 
-#else
-
-// FUNCTION: GOLDP 0x1000d210
-__declspec(naked) void GolD3DRenderDevice::FUN_1000d210(
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		mov edx, dword ptr [ecx + 0xc4c0c]
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x10]
-		push esi
-		mov esi, dword ptr [esp + 0x18]
-		lea eax, [ebp + ebp*2]
-		push edi
-		shl eax, 2
-		add edx, eax
-		lea esi, [esi + esi*2]
-		mov edi, dword ptr [ecx + 0xc4c10]
-		lea ebx, [edx + esi*4]
-		mov esi, dword ptr [ecx + 0xc4c1c]
-		add esi, eax
-		mov eax, dword ptr [esp + 0x14]
-		shl eax, 5
-		cmp edx, ebx
-		lea edi, [edi + ebp*8]
-		lea eax, [eax + ecx + 0xc428c]
-		jae L_d210_0
-	L_d210_1:
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp]
-		fmul dword ptr [edx]
-		fmul dword ptr [ecx + 0xc852c]
-		fstp dword ptr [eax]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 4]
-		fmul dword ptr [edx]
-		fmul dword ptr [ecx + 0xc852c]
-		fstp dword ptr [eax + 4]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 8]
-		fmul dword ptr [edx]
-		fmul dword ptr [ecx + 0xc852c]
-		fstp dword ptr [eax + 8]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x10]
-		fmul dword ptr [edx + 4]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x14]
-		fmul dword ptr [edx + 4]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x18]
-		fmul dword ptr [edx + 4]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x20]
-		fmul dword ptr [edx + 8]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x24]
-		fmul dword ptr [edx + 8]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x28]
-		fmul dword ptr [edx + 8]
-		fmul dword ptr [ecx + 0xc852c]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x30]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x34]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x38]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax + 0x14]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 4]
-		fmul dword ptr [esi + 4]
-		fstp dword ptr [eax + 0x18]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 8]
-		fmul dword ptr [esi + 8]
-		fstp dword ptr [eax + 0x1c]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x10]
-		fmul dword ptr [esi]
-		fadd dword ptr [eax + 0x14]
-		fstp dword ptr [eax + 0x14]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x14]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax + 0x18]
-		fstp dword ptr [eax + 0x18]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x18]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax + 0x1c]
-		fstp dword ptr [eax + 0x1c]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x20]
-		fmul dword ptr [esi]
-		fadd dword ptr [eax + 0x14]
-		add edx, 0xc
-		add edi, 8
-		add esi, 0xc
-		add eax, 0x20
-		cmp edx, ebx
-		fstp dword ptr [eax - 0xc]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x24]
-		fmul dword ptr [esi - 8]
-		fadd dword ptr [eax - 8]
-		fstp dword ptr [eax - 8]
-		mov ebp, dword ptr [ecx + 0xc8518]
-		fld dword ptr [ebp + 0x28]
-		fmul dword ptr [esi - 4]
-		fadd dword ptr [eax - 4]
-		fstp dword ptr [eax - 4]
-		mov ebp, dword ptr [edi - 8]
-		mov dword ptr [eax - 0x14], ebp
-		mov ebp, dword ptr [edi - 4]
-		mov dword ptr [eax - 0x10], ebp
-		jb L_d210_1
-		mov ebp, dword ptr [esp + 0x18]
-	L_d210_0:
-		mov eax, dword ptr [esp + 0x1c]
-		mov edx, dword ptr [esp + 0x14]
-		mov dword ptr [ecx + 0xc8548], eax
-		mov eax, dword ptr [ecx + 0xc8524]
-		mov dword ptr [ecx + 0xc8540], edx
-		mov dword ptr [ecx + 0xc8544], ebp
-		mov edx, dword ptr [eax]
-		add ecx, 0xc8530
-		push ecx
-		mov ecx, eax
-		call dword ptr [edx + 8]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		ret 0xc
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x1000d440
 void GolD3DRenderDevice::FUN_1000d440(LegoU32 p_outputFirst, LegoU32 p_firstVertex, LegoU32 p_vertexCount)
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
+	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 	LegoU32* color = m_sourceColors + p_firstVertex;
 	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
-	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 
 	while (position < positionEnd) {
 		vertex->m_x = m_currentMatrix->m_m[0][0] * position->m_x;
@@ -4739,147 +4567,14 @@ void GolD3DRenderDevice::FUN_1000d440(LegoU32 p_outputFirst, LegoU32 p_firstVert
 	m_renderState->ProcessVertices(&m_drawCommand);
 }
 
-#else
-
-// FUNCTION: GOLDP 0x1000d440
-__declspec(naked) void GolD3DRenderDevice::FUN_1000d440(
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		push ecx
-		mov edx, dword ptr [esp + 0xc]
-		push ebx
-		mov ebx, dword ptr [esp + 0x14]
-		push ebp
-		push esi
-		mov esi, dword ptr [ecx + 0xc4c0c]
-		lea eax, [edx + edx*2]
-		push edi
-		mov edi, dword ptr [ecx + 0xc4c14]
-		lea esi, [esi + eax*4]
-		lea eax, [ebx + ebx*2]
-		lea ebp, [edi + edx*4]
-		mov edi, dword ptr [ecx + 0xc4c10]
-		lea eax, [esi + eax*4]
-		mov dword ptr [esp + 0x10], eax
-		mov eax, dword ptr [esp + 0x18]
-		shl eax, 5
-		cmp esi, dword ptr [esp + 0x10]
-		lea edi, [edi + edx*8]
-		lea eax, [eax + ecx + 0xc428c]
-		jae L_d440_0
-	L_d440_1:
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 4]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 8]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x10]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x14]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x18]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x20]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x24]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x28]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x30]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x34]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x38]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ebp]
-		mov ebx, edx
-		shr ebx, 0x10
-		mov byte ptr [eax + 0x14], bl
-		mov ebx, edx
-		mov byte ptr [eax + 0x16], dl
-		add esi, 0xc
-		shr ebx, 8
-		shr edx, 0x18
-		mov byte ptr [eax + 0x15], bl
-		mov byte ptr [eax + 0x17], dl
-		mov edx, dword ptr [edi]
-		add edi, 8
-		mov dword ptr [eax + 0xc], edx
-		mov edx, dword ptr [edi - 4]
-		mov dword ptr [eax + 0x10], edx
-		mov edx, dword ptr [esp + 0x10]
-		add ebp, 4
-		add eax, 0x20
-		cmp esi, edx
-		jb L_d440_1
-		mov edx, dword ptr [esp + 0x1c]
-		mov ebx, dword ptr [esp + 0x20]
-	L_d440_0:
-		mov eax, dword ptr [esp + 0x18]
-		mov dword ptr [ecx + 0xc8544], edx
-		mov dword ptr [ecx + 0xc8540], eax
-		mov eax, dword ptr [ecx + 0xc8524]
-		mov dword ptr [ecx + 0xc8548], ebx
-		add ecx, 0xc8530
-		mov edx, dword ptr [eax]
-		push ecx
-		mov ecx, eax
-		call dword ptr [edx + 8]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		pop ecx
-		ret 0xc
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x1000d5d0
 void GolD3DRenderDevice::FUN_1000d5d0(LegoU32 p_outputFirst, LegoU32 p_firstVertex, LegoU32 p_vertexCount)
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
+	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 	LegoU32* color = m_sourceColors + p_firstVertex;
 	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
-	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 
 	while (position < positionEnd) {
 		vertex->m_x = m_currentMatrix->m_m[0][0] * position->m_x;
@@ -4918,138 +4613,6 @@ void GolD3DRenderDevice::FUN_1000d5d0(LegoU32 p_outputFirst, LegoU32 p_firstVert
 	m_drawCommand.m_vertexCount = p_vertexCount;
 	m_renderState->ProcessVertices(&m_drawCommand);
 }
-
-#else
-
-// FUNCTION: GOLDP 0x1000d5d0
-__declspec(naked) void GolD3DRenderDevice::FUN_1000d5d0(
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		push ecx
-		mov edx, dword ptr [esp + 0xc]
-		push ebx
-		mov ebx, dword ptr [esp + 0x14]
-		push ebp
-		push esi
-		mov esi, dword ptr [ecx + 0xc4c0c]
-		lea eax, [edx + edx*2]
-		push edi
-		mov edi, dword ptr [ecx + 0xc4c14]
-		lea esi, [esi + eax*4]
-		lea eax, [ebx + ebx*2]
-		lea ebp, [edi + edx*4]
-		mov edi, dword ptr [ecx + 0xc4c10]
-		lea eax, [esi + eax*4]
-		mov dword ptr [esp + 0x10], eax
-		mov eax, dword ptr [esp + 0x18]
-		shl eax, 5
-		cmp esi, dword ptr [esp + 0x10]
-		lea edi, [edi + edx*8]
-		lea eax, [eax + ecx + 0xc428c]
-		jae L_d5d0_0
-	L_d5d0_1:
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 4]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 8]
-		fmul dword ptr [esi]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x10]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x14]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x18]
-		fmul dword ptr [esi + 4]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x20]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x24]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x28]
-		fmul dword ptr [esi + 8]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x30]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x34]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		mov edx, dword ptr [ecx + 0xc8518]
-		fld dword ptr [edx + 0x38]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		mov edx, dword ptr [ebp]
-		mov ebx, edx
-		shr ebx, 0x10
-		mov byte ptr [eax + 0x14], bl
-		mov ebx, edx
-		shr ebx, 8
-		mov byte ptr [eax + 0x15], bl
-		mov byte ptr [eax + 0x16], dl
-		mov dl, byte ptr [ecx + 0xc83e0]
-		add esi, 0xc
-		mov byte ptr [eax + 0x17], dl
-		mov edx, dword ptr [edi]
-		mov dword ptr [eax + 0xc], edx
-		mov edx, dword ptr [edi + 4]
-		mov dword ptr [eax + 0x10], edx
-		mov edx, dword ptr [esp + 0x10]
-		add edi, 8
-		add ebp, 4
-		add eax, 0x20
-		cmp esi, edx
-		jb L_d5d0_1
-		mov edx, dword ptr [esp + 0x1c]
-		mov ebx, dword ptr [esp + 0x20]
-	L_d5d0_0:
-		mov eax, dword ptr [esp + 0x18]
-		mov dword ptr [ecx + 0xc8544], edx
-		mov dword ptr [ecx + 0xc8540], eax
-		mov eax, dword ptr [ecx + 0xc8524]
-		mov dword ptr [ecx + 0xc8548], ebx
-		add ecx, 0xc8530
-		mov edx, dword ptr [eax]
-		push ecx
-		mov ecx, eax
-		call dword ptr [edx + 8]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		pop ecx
-		ret 0xc
-	}
-}
-
-#endif
 
 // FUNCTION: GOLDP 0x1000d760
 void GolD3DRenderDevice::FUN_1000d760(LegoU32 p_outputFirst, LegoU32 p_firstVertex, LegoU32 p_vertexCount)
