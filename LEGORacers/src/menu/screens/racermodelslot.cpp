@@ -20,8 +20,7 @@ RacerModelSlot::~RacerModelSlot()
 	Destroy();
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x00487570
 void RacerModelSlot::Reset()
 {
 	::memset(&m_createParams, 0, sizeof(m_createParams));
@@ -40,44 +39,6 @@ void RacerModelSlot::Reset()
 	m_timerAMs = 0;
 	m_promoteA = TRUE;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x00487570
-__declspec(naked) void RacerModelSlot::Reset()
-{
-	__asm {
-		mov edx, ecx
-		push esi
-		push edi
-		mov ecx, 0x12
-		xor eax, eax
-		lea edi, [edx + 0x1c]
-		rep stosd
-		lea ecx, [edx + 0x88]
-		mov esi, eax
-		pop edi
-		mov dword ptr [edx + 0x68], eax
-		mov dword ptr [ecx], esi
-		mov dword ptr [edx + 0x6c], eax
-		mov dword ptr [edx + 0x64], eax
-		mov dword ptr [edx + 0x74], eax
-		mov dword ptr [ecx + 4], esi
-		mov dword ptr [edx + 0x70], eax
-		mov dword ptr [edx + 0x78], 0x3f800000
-		mov dword ptr [edx + 0x84], eax
-		mov dword ptr [ecx + 8], esi
-		mov dword ptr [edx + 0x80], eax
-		mov dword ptr [edx + 0x7c], eax
-		mov dword ptr [edx + 0x98], eax
-		mov dword ptr [edx + 0x94], eax
-		mov dword ptr [edx + 0x9c], 1
-		pop esi
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x004875d0
 LegoBool32 RacerModelSlot::Create(CreateParams* p_createParams)

@@ -1340,36 +1340,19 @@ void CarBuildModel::EmitPrimitives(GolModelEntity* p_entity)
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0049b150
 LegoS32 CarBuildModel::ComparePrimitiveMaterial(const void* p_lhs, const void* p_rhs)
 {
 	const BuildPrimitive* lhs = *static_cast<BuildPrimitive* const*>(p_lhs);
 	const BuildPrimitive* rhs = *static_cast<BuildPrimitive* const*>(p_rhs);
+	LegoS32 result = lhs->m_materialIndex - rhs->m_materialIndex;
 
-	return lhs->m_materialIndex - rhs->m_materialIndex;
-}
-
-#else
-
-// FUNCTION: LEGORACERS 0x0049b150
-__declspec(naked) LegoS32 CarBuildModel::ComparePrimitiveMaterial(const void* p_lhs, const void* p_rhs)
-{
-	__asm {
-		mov eax, dword ptr [esp + 4]
-		mov edx, dword ptr [esp + 8]
-		mov ecx, dword ptr [eax]
-		xor eax, eax
-		mov ax, word ptr [ecx + 2]
-		mov ecx, dword ptr [edx]
-		xor edx, edx
-		mov dx, word ptr [ecx + 2]
-		sub eax, edx
-		ret
+	if (result != 0) {
+		return result;
 	}
-}
 
-#endif
+	return 0;
+}
 
 // FUNCTION: LEGORACERS 0x0049b170
 LegoS32 CarBuildModel::BuildPieceModel(

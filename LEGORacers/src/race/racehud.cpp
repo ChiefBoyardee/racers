@@ -1284,32 +1284,12 @@ void RaceHud::StartCountdown()
 	m_bannerMs = 1;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x00426370
 void RaceHud::ShowFinish()
 {
-	LegoS32 value = m_racer->m_standingsPosition;
-
+	m_finalPosition = m_racer->m_standingsPosition - 1;
 	m_bannerMs = -1;
-	m_finalPosition = value - 1;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x00426370
-__declspec(naked) void RaceHud::ShowFinish()
-{
-	__asm {
-		mov eax, dword ptr [ecx + 0x2c]
-		mov edx, dword ptr [eax + 0xd00]
-		mov dword ptr [ecx + 0x70], 0xffffffff
-		dec edx
-		mov dword ptr [ecx + 0x8c], edx
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x00426390
 void RaceHud::Update(LegoU32 p_elapsedMs)

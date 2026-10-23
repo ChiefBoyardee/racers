@@ -30,8 +30,7 @@ TriggeredAnimationHazard::~TriggeredAnimationHazard()
 	Reset();
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0048edd0
 void TriggeredAnimationHazard::ClearFields()
 {
 	m_triggerId = -1;
@@ -40,32 +39,11 @@ void TriggeredAnimationHazard::ClearFields()
 	m_entities[2] = NULL;
 	m_entities[3] = NULL;
 	m_collider = NULL;
-	m_unk0x24.Clear();
-}
 
-#else
-
-// FUNCTION: LEGORACERS 0x0048edd0
-__declspec(naked) void TriggeredAnimationHazard::ClearFields()
-{
-	__asm {
-		xor eax, eax
-		mov dword ptr [ecx + 8], 0xffffffff
-		mov dword ptr [ecx + 0x10], eax
-		mov dword ptr [ecx + 0x14], eax
-		mov dword ptr [ecx + 0x18], eax
-		mov dword ptr [ecx + 0x1c], eax
-		mov dword ptr [ecx + 0x20], eax
-		lea eax, [ecx + 0x24]
-		xor ecx, ecx
-		mov dword ptr [eax], ecx
-		mov dword ptr [eax + 4], ecx
-		mov dword ptr [eax + 8], ecx
-		ret
+	for (LegoS32 i = 0; i < c_modelDistanceCount; i++) {
+		m_modelDistances[i] = 0.0f;
 	}
 }
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0048ee00
 void TriggeredAnimationHazard::Load(HazardContext* p_context, GolFileParser* p_parser)
@@ -124,7 +102,7 @@ void TriggeredAnimationHazard::Load(HazardContext* p_context, GolFileParser* p_p
 	} while (--count);
 
 	for (i = 0; i < 3; i++) {
-		(&m_unk0x24.m_x)[i] = m_entities[0]->GetModelDistance(i);
+		m_modelDistances[i] = m_entities[0]->GetModelDistance(i);
 	}
 	m_state = c_stateLoaded;
 }
@@ -209,7 +187,7 @@ void TriggeredAnimationHazard::Draw(GolD3DRenderDevice* p_renderer)
 		GolAnimatedEntity** entity = &m_entities[i];
 		if (*entity != NULL) {
 			LegoS32 j;
-			LegoFloat* modelDistances = &m_unk0x24.m_x;
+			LegoFloat* modelDistances = m_modelDistances;
 			for (j = 0; j < c_modelDistanceCount; j++) {
 				(*entity)->SetModelDistance(j, modelDistances[j]);
 			}
@@ -250,7 +228,7 @@ void TriggeredAnimationHazard::ResetState()
 			(*entity)->ApplyPartAnimation(0);
 			(*entity)->SetFlags((*entity)->GetFlags() & ~GolAnimatedEntity::c_flagPartAnimation);
 
-			LegoFloat* modelDistances = &m_unk0x24.m_x;
+			LegoFloat* modelDistances = m_modelDistances;
 			for (LegoS32 i = 0; i < c_modelDistanceCount; i++) {
 				(*entity)->SetModelDistance(i, modelDistances[i]);
 			}

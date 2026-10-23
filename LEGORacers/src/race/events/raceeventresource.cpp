@@ -44,37 +44,18 @@ RaceEventResource::~RaceEventResource()
 	Reset();
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0045eda0
 void RaceEventResource::Reset()
 {
 	m_eventTable = NULL;
-	m_stateEventIds[0] = -1;
-	m_stateEventIds[1] = -1;
-	m_stateEventIds[2] = -1;
+
+	for (LegoS32 i = 0; i < sizeOfArray(m_stateEventIds); i++) {
+		m_stateEventIds[i] = -1;
+	}
+
 	m_state = 0;
 	m_eventId = 0;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0045eda0
-__declspec(naked) void RaceEventResource::Reset()
-{
-	__asm {
-		xor eax, eax
-		or edx, 0xffffffff
-		mov dword ptr [ecx + 4], eax
-		mov dword ptr [ecx + 8], edx
-		mov dword ptr [ecx + 0xc], edx
-		mov dword ptr [ecx + 0x10], edx
-		mov dword ptr [ecx + 0x18], eax
-		mov dword ptr [ecx + 0x14], eax
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0045edc0
 void RaceEventResource::Update(LegoU32)
