@@ -18,7 +18,8 @@ DECOMP_SIZE_ASSERT(GolVec4, 0x10)
 DECOMP_SIZE_ASSERT(GolMatrix3, 0x24)
 DECOMP_SIZE_ASSERT(GolMatrix34, 0x30)
 
-// FUNCTION: GOLDP 0x1002f3a0
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
 {
 	LegoU32 i;
@@ -48,7 +49,86 @@ void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_righ
 	}
 }
 
-// FUNCTION: GOLDP 0x1002f450
+#else
+
+// FUNCTION: GOLDP 0x1002f3a0
+__declspec(naked) void GolMath::MultiplyMatrix4(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
+{
+	__asm {
+		mov ecx, dword ptr [esp + 4]
+		mov edx, dword ptr [esp + 8]
+		mov eax, dword ptr [esp + 0xc]
+		push ebp
+		push ebx
+		mov ebp, 4
+	rowLoop:
+		fld dword ptr [ecx]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 4]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 8]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx + 0xc]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 0x10]
+		fld dword ptr [ecx + 4]
+		dec ebp
+		mov ebx, dword ptr [eax]
+		fmul dword ptr [edx + 0x14]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 0x18]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 0x1c]
+		fxch st(3)
+		faddp st(7), st
+		faddp st(4), st
+		faddp st(4), st
+		faddp st(1), st
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 0x20]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 0x24]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 0x28]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 0x2c]
+		fxch st(3)
+		faddp st(7), st
+		faddp st(4), st
+		faddp st(4), st
+		faddp st(1), st
+		fld dword ptr [ecx + 0xc]
+		fmul dword ptr [edx + 0x30]
+		fld dword ptr [ecx + 0xc]
+		fmul dword ptr [edx + 0x34]
+		fld dword ptr [ecx + 0xc]
+		fmul dword ptr [edx + 0x38]
+		fld dword ptr [ecx + 0xc]
+		fmul dword ptr [edx + 0x3c]
+		fxch st(3)
+		faddp st(7), st
+		faddp st(4), st
+		faddp st(4), st
+		faddp st(1), st
+		fxch st(3)
+		fstp dword ptr [eax]
+		fstp dword ptr [eax + 8]
+		fstp dword ptr [eax + 4]
+		fstp dword ptr [eax + 0xc]
+		lea ecx, [ecx + 0x10]
+		lea eax, [eax + 0x10]
+		jne rowLoop
+		pop ebx
+		pop ebp
+		ret
+	}
+}
+
+#endif
+
+#ifdef COMPAT_MODE
+
 void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& p_right, GolMatrix4* p_dest)
 {
 	LegoU32 i;
@@ -63,6 +143,73 @@ void GolMath::MultiplyMatrix4Affine(const GolMatrix4& p_left, const GolMatrix4& 
 							p_left.m_m[3][2] * p_right.m_m[2][i] + p_right.m_m[3][i];
 	}
 }
+
+#else
+
+// FUNCTION: GOLDP 0x1002f450
+__declspec(naked) void GolMath::MultiplyMatrix4Affine(
+	const GolMatrix4& p_left,
+	const GolMatrix4& p_right,
+	GolMatrix4* p_dest
+)
+{
+	__asm {
+		mov ecx, dword ptr [esp + 4]
+		mov edx, dword ptr [esp + 8]
+		mov eax, dword ptr [esp + 0xc]
+		push ebp
+		mov ebp, 3
+	columnLoop:
+		fld dword ptr [ecx + 0x30]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 0x20]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 0x10]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx]
+		fmul dword ptr [edx]
+		fld dword ptr [ecx + 0x34]
+		fmul dword ptr [edx + 0x10]
+		fld dword ptr [ecx + 0x24]
+		fmul dword ptr [edx + 0x10]
+		fld dword ptr [ecx + 0x14]
+		fmul dword ptr [edx + 0x10]
+		fld dword ptr [ecx + 4]
+		fmul dword ptr [edx + 0x10]
+		fxch st(3)
+		faddp st(7), st
+		faddp st(4), st
+		faddp st(4), st
+		faddp st(1), st
+		fld dword ptr [ecx + 0x38]
+		fmul dword ptr [edx + 0x20]
+		fld dword ptr [ecx + 0x28]
+		fmul dword ptr [edx + 0x20]
+		fld dword ptr [ecx + 0x18]
+		fmul dword ptr [edx + 0x20]
+		fld dword ptr [ecx + 8]
+		fmul dword ptr [edx + 0x20]
+		fxch st(1)
+		faddp st(5), st
+		fld dword ptr [edx + 0x30]
+		faddp st(7), st
+		faddp st(3), st
+		faddp st(4), st
+		faddp st(4), st
+		fstp dword ptr [eax]
+		fstp dword ptr [eax + 0x10]
+		fstp dword ptr [eax + 0x20]
+		fstp dword ptr [eax + 0x30]
+		dec ebp
+		lea edx, [edx + 4]
+		lea eax, [eax + 4]
+		jne columnLoop
+		pop ebp
+		ret
+	}
+}
+
+#endif
 
 #ifdef COMPAT_MODE
 
