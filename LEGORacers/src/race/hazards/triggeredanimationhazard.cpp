@@ -39,7 +39,10 @@ void TriggeredAnimationHazard::ClearFields()
 	m_entities[2] = NULL;
 	m_entities[3] = NULL;
 	m_collider = NULL;
-	m_unk0x24.Clear();
+
+	for (LegoS32 i = 0; i < c_modelDistanceCount; i++) {
+		m_modelDistances[i] = 0.0f;
+	}
 }
 
 // FUNCTION: LEGORACERS 0x0048ee00
@@ -99,7 +102,7 @@ void TriggeredAnimationHazard::Load(HazardContext* p_context, GolFileParser* p_p
 	} while (--count);
 
 	for (i = 0; i < 3; i++) {
-		(&m_unk0x24.m_x)[i] = m_entities[0]->GetModelDistance(i);
+		m_modelDistances[i] = m_entities[0]->GetModelDistance(i);
 	}
 	m_state = c_stateLoaded;
 }
@@ -184,7 +187,7 @@ void TriggeredAnimationHazard::Draw(GolD3DRenderDevice* p_renderer)
 		GolAnimatedEntity** entity = &m_entities[i];
 		if (*entity != NULL) {
 			LegoS32 j;
-			LegoFloat* modelDistances = &m_unk0x24.m_x;
+			LegoFloat* modelDistances = m_modelDistances;
 			for (j = 0; j < c_modelDistanceCount; j++) {
 				(*entity)->SetModelDistance(j, modelDistances[j]);
 			}
@@ -225,7 +228,7 @@ void TriggeredAnimationHazard::ResetState()
 			(*entity)->ApplyPartAnimation(0);
 			(*entity)->SetFlags((*entity)->GetFlags() & ~GolAnimatedEntity::c_flagPartAnimation);
 
-			LegoFloat* modelDistances = &m_unk0x24.m_x;
+			LegoFloat* modelDistances = m_modelDistances;
 			for (LegoS32 i = 0; i < c_modelDistanceCount; i++) {
 				(*entity)->SetModelDistance(i, modelDistances[i]);
 			}
