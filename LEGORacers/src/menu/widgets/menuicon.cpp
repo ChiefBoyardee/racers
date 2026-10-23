@@ -157,14 +157,8 @@ void MenuIcon::DetachFromParent()
 
 	if (m_nextSibling) {
 		m_nextSibling->m_prevSibling = m_prevSibling;
-		m_nextSibling = NULL;
-		m_prevSibling = NULL;
-		m_parent = NULL;
-		m_attached = FALSE;
-		return;
 	}
-
-	if (m_parent) {
+	else if (m_parent) {
 		m_parent->m_lastChild = m_prevSibling;
 	}
 
