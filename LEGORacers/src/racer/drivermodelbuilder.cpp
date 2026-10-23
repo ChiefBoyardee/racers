@@ -328,8 +328,7 @@ void DriverModelBuilder::CopyModelVertices(
 	p_destModel->AddFlagsWithBounds(0, FALSE);
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0049d880
 void DriverModelBuilder::CopyModelIndices(GolModelBase* p_sourceModel, GolModelBase* p_destModel, LegoU32 p_indexOffset)
 {
 	GdbModelIndexArrayBase* sourceIndexArrayBase;
@@ -337,100 +336,22 @@ void DriverModelBuilder::CopyModelIndices(GolModelBase* p_sourceModel, GolModelB
 	p_sourceModel->GetIndexArrayInto(&sourceIndexArrayBase);
 	p_destModel->GetIndexArrayInto(&destIndexArrayBase);
 
-	GdbModelIndexArray* sourceIndexArray = static_cast<GdbModelIndexArray*>(sourceIndexArrayBase);
-	GdbModelIndexArray* destIndexArray = static_cast<GdbModelIndexArray*>(destIndexArrayBase);
-
-	for (LegoU32 i = 0; i < sourceIndexArrayBase->GetCount(); i++) {
-		const GdbModelIndexArray::Indices* sourceIndices = sourceIndexArray->GetIndex(i);
+	LegoS32 count = sourceIndexArrayBase->GetCount();
+	for (LegoS32 i = 0; i < count; i++) {
+		const GdbModelIndexArray::Indices* sourceIndices =
+			static_cast<GdbModelIndexArray*>(sourceIndexArrayBase)->GetIndex(i);
 		if (sourceIndices != NULL) {
-			GdbModelIndexArray::Indices* destIndices = destIndexArray->GetMutableIndex(p_indexOffset + i);
-			destIndices->m_a = sourceIndices->m_a;
-			destIndices->m_b = sourceIndices->m_b;
-			destIndices->m_c = sourceIndices->m_c;
+			GdbModelIndexArray* destIndexArray = static_cast<GdbModelIndexArray*>(destIndexArrayBase);
+			LegoU32 destIndex = p_indexOffset + i;
+			destIndexArray->GetMutableIndex(destIndex)->m_a = sourceIndices->m_a;
+			destIndexArray->GetMutableIndex(destIndex)->m_b = sourceIndices->m_b;
+			destIndexArray->GetMutableIndex(destIndex)->m_c = sourceIndices->m_c;
 		}
 	}
 
 	p_sourceModel->AddFlags(0);
 	p_destModel->AddFlags(0);
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0049d880
-__declspec(naked) void DriverModelBuilder::CopyModelIndices(
-	GolModelBase* p_sourceModel,
-	GolModelBase* p_destModel,
-	LegoU32 p_indexOffset
-)
-{
-	__asm {
-		sub esp, 8
-		lea ecx, [esp]
-		push ebx
-		mov ebx, dword ptr [esp + 0x10]
-		push ebp
-		push esi
-		mov eax, dword ptr [ebx]
-		push edi
-		push ecx
-		mov ecx, ebx
-		call dword ptr [eax + 0x30]
-		mov esi, dword ptr [esp + 0x20]
-		lea eax, [esp + 0x14]
-		push eax
-		mov ecx, esi
-		mov edx, dword ptr [esi]
-		call dword ptr [edx + 0x30]
-		mov ecx, dword ptr [esp + 0x10]
-		xor edi, edi
-		mov ebp, dword ptr [ecx + 4]
-		test ebp, ebp
-		jle L_CopyModelIndices_0
-		mov edx, dword ptr [esp + 0x24]
-		lea esi, [edx*4]
-	L_CopyModelIndices_2:
-		mov eax, dword ptr [esp + 0x10]
-		mov ecx, dword ptr [eax + 8]
-		lea eax, [ecx + edi*4]
-		test eax, eax
-		je L_CopyModelIndices_1
-		mov edx, dword ptr [esp + 0x14]
-		mov bl, byte ptr [eax]
-		lea ecx, [edx + 8]
-		mov edx, dword ptr [edx + 8]
-		mov byte ptr [edx + esi], bl
-		mov edx, dword ptr [ecx]
-		mov bl, byte ptr [eax + 1]
-		mov byte ptr [edx + esi + 1], bl
-		mov ecx, dword ptr [ecx]
-		mov dl, byte ptr [eax + 2]
-		mov ebx, dword ptr [esp + 0x1c]
-		mov byte ptr [ecx + esi + 2], dl
-	L_CopyModelIndices_1:
-		inc edi
-		add esi, 4
-		cmp edi, ebp
-		jl L_CopyModelIndices_2
-		mov esi, dword ptr [esp + 0x20]
-	L_CopyModelIndices_0:
-		mov eax, dword ptr [ebx]
-		push 0
-		mov ecx, ebx
-		call dword ptr [eax + 0x34]
-		mov edx, dword ptr [esi]
-		push 0
-		mov ecx, esi
-		call dword ptr [edx + 0x34]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 8
-		ret 0xc
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0049d920
 void DriverModelBuilder::CopyBodyIntoOutput()

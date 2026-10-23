@@ -189,10 +189,10 @@ void RaceTrailManager::Trail::Update(LegoU32 p_elapsedMs)
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x00492c30
 void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
 {
+	LegoU32 remainingMs = p_elapsedMs;
 	LegoU32 queuedDuration = 0;
 	LegoU32 index = m_tailIndex;
 
@@ -210,30 +210,29 @@ void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
 		m_flags = flags | c_saturated;
 	}
 
-	if (!(m_flags & c_saturated) || p_elapsedMs == 0) {
+	if (!(m_flags & c_saturated)) {
 		return;
 	}
 
-	LegoU32 remainingMs = p_elapsedMs;
-	do {
-		LegoU32 stepMs = remainingMs;
+	while (remainingMs > 0) {
+		LegoU32 stepMs;
 		if (remainingMs > m_sampleMs) {
 			stepMs = m_sampleMs;
 			remainingMs -= stepMs;
 		}
 		else {
+			stepMs = remainingMs;
 			remainingMs = 0;
 		}
 
 		LegoU32 currentIndex = m_tailIndex;
 		LegoU32 nextIndex = (currentIndex + 1) % m_ringSize;
 		if (stepMs > 0) {
-			Sample* next = &m_samples[nextIndex];
-			LegoU32 durationMs = next->m_durationMs;
+			LegoU32 durationMs = m_samples[nextIndex].m_durationMs;
 			if (stepMs >= durationMs) {
-				next->m_durationMs = 0;
+				m_samples[nextIndex].m_durationMs = 0;
 				stepMs -= durationMs;
-				m_tailIndex = currentIndex + 1;
+				m_tailIndex++;
 				if (m_tailIndex == m_ringSize) {
 					m_tailIndex = 0;
 				}
@@ -242,8 +241,8 @@ void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
 				nextIndex = (currentIndex + 1) % m_ringSize;
 			}
 
-			queuedDuration = 0;
 			index = currentIndex;
+			queuedDuration = 0;
 			do {
 				index++;
 				if (index == m_ringSize) {
@@ -254,26 +253,22 @@ void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
 			} while (index != m_headIndex);
 
 			if (stepMs > 0 && queuedDuration > 0) {
-				next = &m_samples[nextIndex];
-				durationMs = next->m_durationMs;
+				durationMs = m_samples[nextIndex].m_durationMs;
 				if (stepMs > durationMs) {
 					stepMs = durationMs - 1;
 				}
 
-				LegoFloat amount = static_cast<LegoFloat>(static_cast<LegoS32>(stepMs)) /
-								   static_cast<LegoFloat>(static_cast<LegoS32>(durationMs));
-				next->m_durationMs = durationMs - stepMs;
+				LegoFloat duration = static_cast<LegoFloat>(static_cast<LegoS32>(durationMs));
+				LegoFloat amount = static_cast<LegoFloat>(static_cast<LegoS32>(stepMs)) / duration;
+				m_samples[nextIndex].m_durationMs = durationMs - stepMs;
 
-				Sample* current = &m_samples[m_tailIndex];
 				for (LegoU32 i = 0; i < m_pointCount; i++) {
-					current->m_points[i].m_x += (next->m_points[i].m_x - current->m_points[i].m_x) * amount;
-					current->m_points[i].m_y += (next->m_points[i].m_y - current->m_points[i].m_y) * amount;
-					current->m_points[i].m_z += (next->m_points[i].m_z - current->m_points[i].m_z) * amount;
+					m_samples[m_tailIndex].m_points[i] +=
+						(m_samples[nextIndex].m_points[i] - m_samples[m_tailIndex].m_points[i]) * amount;
 				}
 
-				current->m_center.m_x += (next->m_center.m_x - current->m_center.m_x) * amount;
-				current->m_center.m_y += (next->m_center.m_y - current->m_center.m_y) * amount;
-				current->m_center.m_z += (next->m_center.m_z - current->m_center.m_z) * amount;
+				m_samples[m_tailIndex].m_center +=
+					(m_samples[nextIndex].m_center - m_samples[m_tailIndex].m_center) * amount;
 			}
 		}
 
@@ -283,231 +278,8 @@ void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
 				return;
 			}
 		}
-	} while (remainingMs > 0);
-}
-
-#else
-
-// FUNCTION: LEGORACERS 0x00492c30
-__declspec(naked) void RaceTrailManager::Trail::AdvanceTail(LegoU32 p_elapsedMs)
-{
-	__asm {
-		mov eax, dword ptr [ecx + 0xac]
-		mov edx, dword ptr [ecx + 0xa8]
-		sub esp, 0x30
-		push ebx
-		push ebp
-		push esi
-		mov esi, dword ptr [ecx + 0xb8]
-		push edi
-		mov edi, dword ptr [esp + 0x44]
-		xor ebx, ebx
-	L_AdvanceTail_1:
-		inc eax
-		cmp eax, esi
-		jne L_AdvanceTail_0
-		xor eax, eax
-	L_AdvanceTail_0:
-		lea ebp, [eax + eax*8]
-		lea ebp, [eax + ebp*2]
-		add ebx, dword ptr [ecx + ebp*4 + 0xdc]
-		cmp eax, edx
-		jne L_AdvanceTail_1
-		mov al, byte ptr [ecx + 0x9c]
-		test al, 0x10
-		jne L_AdvanceTail_2
-		cmp ebx, dword ptr [ecx + 0xa0]
-		jbe L_AdvanceTail_2
-		or al, 0x10
-		mov byte ptr [ecx + 0x9c], al
-	L_AdvanceTail_2:
-		test byte ptr [ecx + 0x9c], 0x10
-		je L_AdvanceTail_3
-		mov eax, dword ptr [esp + 0x44]
-		test eax, eax
-		jbe L_AdvanceTail_3
-		jmp L_AdvanceTail_4
-	L_AdvanceTail_17:
-		mov edi, dword ptr [esp + 0x10]
-	L_AdvanceTail_4:
-		mov esi, dword ptr [ecx + 0xa4]
-		cmp edi, esi
-		jbe L_AdvanceTail_5
-		sub edi, esi
-		mov dword ptr [esp + 0x44], esi
-		mov dword ptr [esp + 0x10], edi
-		jmp L_AdvanceTail_6
-	L_AdvanceTail_5:
-		mov esi, edi
-		mov dword ptr [esp + 0x10], 0
-		mov dword ptr [esp + 0x44], esi
-	L_AdvanceTail_6:
-		mov edi, dword ptr [ecx + 0xac]
-		mov ebp, dword ptr [ecx + 0xb8]
-		xor edx, edx
-		lea eax, [edi + 1]
-		div ebp
-		test esi, esi
-		jbe L_AdvanceTail_7
-		lea eax, [edx + edx*8]
-		lea eax, [edx + eax*2]
-		mov ebx, dword ptr [ecx + eax*4 + 0xdc]
-		lea eax, [ecx + eax*4 + 0xdc]
-		cmp esi, ebx
-		jb L_AdvanceTail_8
-		mov dword ptr [eax], 0
-		mov edi, dword ptr [ecx + 0xac]
-		mov ebp, dword ptr [ecx + 0xb8]
-		sub esi, ebx
-		inc edi
-		mov dword ptr [esp + 0x44], esi
-		mov eax, edi
-		mov dword ptr [ecx + 0xac], edi
-		cmp eax, ebp
-		jne L_AdvanceTail_9
-		mov dword ptr [ecx + 0xac], 0
-	L_AdvanceTail_9:
-		mov edi, dword ptr [ecx + 0xac]
-		xor edx, edx
-		lea eax, [edi + 1]
-		div ebp
-	L_AdvanceTail_8:
-		mov eax, edi
-		xor ebx, ebx
-	L_AdvanceTail_11:
-		inc eax
-		cmp eax, ebp
-		jne L_AdvanceTail_10
-		xor eax, eax
-	L_AdvanceTail_10:
-		lea edi, [eax + eax*8]
-		lea edi, [eax + edi*2]
-		add ebx, dword ptr [ecx + edi*4 + 0xdc]
-		mov edi, dword ptr [ecx + 0xa8]
-		cmp eax, edi
-		jne L_AdvanceTail_11
-		test esi, esi
-		mov dword ptr [esp + 0x18], ebx
-		jbe L_AdvanceTail_7
-		test ebx, ebx
-		jbe L_AdvanceTail_7
-		lea eax, [edx + edx*8]
-		lea edx, [edx + eax*2]
-		mov eax, dword ptr [ecx + edx*4 + 0xdc]
-		cmp esi, eax
-		mov dword ptr [esp + 0x14], eax
-		lea ebp, [ecx + edx*4]
-		jbe L_AdvanceTail_12
-		lea esi, [eax - 1]
-		mov dword ptr [esp + 0x44], esi
-	L_AdvanceTail_12:
-		fild dword ptr [esp + 0x44]
-		sub eax, esi
-		xor esi, esi
-		mov dword ptr [ebp + 0xdc], eax
-		mov eax, dword ptr [ecx + 0xbc]
-		fild dword ptr [esp + 0x14]
-		test eax, eax
-		fdivp st(1), st(0)
-		jbe L_AdvanceTail_13
-		xor edi, edi
-		lea edx, [ebp + 0xe8]
-	L_AdvanceTail_14:
-		mov eax, dword ptr [ecx + 0xac]
-		inc esi
-		fld dword ptr [edx - 8]
-		lea ebx, [eax + eax*8]
-		add edx, 0xc
-		lea eax, [eax + ebx*2]
-		lea eax, [edi + eax*4]
-		add edi, 0xc
-		fsub dword ptr [eax + ecx + 0xe0]
-		fld dword ptr [edx - 0x10]
-		fsub dword ptr [eax + ecx + 0xe4]
-		lea eax, [eax + ecx + 0xe0]
-		fstp dword ptr [esp + 0x20]
-		fld dword ptr [edx - 0xc]
-		fsub dword ptr [eax + 8]
-		fstp dword ptr [esp + 0x24]
-		fmul st(0), st(1)
-		fld dword ptr [esp + 0x20]
-		fmul st(0), st(2)
-		fstp dword ptr [esp + 0x2c]
-		fld dword ptr [esp + 0x24]
-		fmul st(0), st(2)
-		fstp dword ptr [esp + 0x30]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		fld dword ptr [esp + 0x2c]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		fld dword ptr [esp + 0x30]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-		cmp esi, dword ptr [ecx + 0xbc]
-		jb L_AdvanceTail_14
-		mov ebx, dword ptr [esp + 0x18]
-	L_AdvanceTail_13:
-		mov eax, dword ptr [ecx + 0xac]
-		fld dword ptr [ebp + 0x11c]
-		lea edx, [eax + eax*8]
-		lea eax, [eax + edx*2]
-		fsub dword ptr [ecx + eax*4 + 0x11c]
-		fld dword ptr [ebp + 0x120]
-		fsub dword ptr [ecx + eax*4 + 0x120]
-		lea eax, [ecx + eax*4 + 0x11c]
-		fstp dword ptr [esp + 0x20]
-		fld dword ptr [ebp + 0x124]
-		fsub dword ptr [eax + 8]
-		fstp dword ptr [esp + 0x24]
-		fmul st(0), st(1)
-		fld dword ptr [esp + 0x20]
-		fmul st(0), st(2)
-		fstp dword ptr [esp + 0x38]
-		fld dword ptr [esp + 0x24]
-		fmul st(0), st(2)
-		fstp dword ptr [esp + 0x3c]
-		fadd dword ptr [eax]
-		fstp dword ptr [eax]
-		fstp st(0)
-		fld dword ptr [esp + 0x38]
-		fadd dword ptr [eax + 4]
-		fstp dword ptr [eax + 4]
-		fld dword ptr [esp + 0x3c]
-		fadd dword ptr [eax + 8]
-		fstp dword ptr [eax + 8]
-	L_AdvanceTail_7:
-		test byte ptr [ecx + 0x9c], 2
-		je L_AdvanceTail_15
-		mov edx, dword ptr [ecx + 0xac]
-		mov eax, dword ptr [ecx + 0xa8]
-		cmp edx, eax
-		je L_AdvanceTail_16
-		test ebx, ebx
-		je L_AdvanceTail_16
-	L_AdvanceTail_15:
-		mov eax, dword ptr [esp + 0x10]
-		test eax, eax
-		ja L_AdvanceTail_17
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x30
-		ret 4
-	L_AdvanceTail_16:
-		mov byte ptr [ecx + 0x9c], 0
-	L_AdvanceTail_3:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x30
-		ret 4
 	}
 }
-
-#endif
 
 // FUNCTION: LEGORACERS 0x00492ee0
 void RaceTrailManager::Trail::AddSampleWithCenter(LegoU32 p_elapsedMs, GolVec3* p_positions, GolVec3 p_center)

@@ -1053,8 +1053,7 @@ void RaceState::DrawRacerEntities(GolRenderDevice* p_renderer, Racer* p_racer)
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0043cda0
 LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 {
 	TimeRaceManager* timeRaceManager = m_roster.m_timeRaceManager;
@@ -1070,21 +1069,19 @@ LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 		}
 
 		if (timeRaceManager->HasRecordRunLapTimes()) {
-			const LegoU32* lapTimes = timeRaceManager->GetRecordLapTimes();
 			for (LegoU32 i = 0; i < lapsCompleted; i++) {
-				recordLapTime += lapTimes[i];
+				recordLapTime += timeRaceManager->GetRecordLapTimes()[i];
 			}
 		}
 
 		if (timeRaceManager->HasBestRunLapTimes()) {
-			const LegoU32* lapTimes = timeRaceManager->GetBestLapTimes();
 			for (LegoU32 i = 0; i < lapsCompleted; i++) {
-				bestLapTime += lapTimes[i];
+				bestLapTime += timeRaceManager->GetBestLapTimes()[i];
 			}
+		}
 
-			if (bestLapTime != 0 && (recordLapTime == 0 || recordLapTime > bestLapTime)) {
-				recordLapTime = bestLapTime;
-			}
+		if ((bestLapTime != 0 && recordLapTime > bestLapTime) || recordLapTime == 0) {
+			recordLapTime = bestLapTime;
 		}
 
 		if (recordLapTime != 0 && recordLapTime < racerLapTime) {
@@ -1105,12 +1102,11 @@ LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 	}
 
 	for (LegoU32 racerIndex = 0; racerIndex < m_roster.m_racerCount; racerIndex++) {
-		Racer* otherRacer = &m_roster.m_racers[racerIndex];
-		if (otherRacer == p_racer) {
+		if (&m_roster.m_racers[racerIndex] == p_racer) {
 			continue;
 		}
 
-		LegoU32 otherLapsCompleted = otherRacer->m_lapsCompleted;
+		LegoU32 otherLapsCompleted = m_roster.m_racers[racerIndex].m_lapsCompleted;
 		if (otherLapsCompleted > lapCount) {
 			otherLapsCompleted = lapCount;
 		}
@@ -1119,12 +1115,12 @@ LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 			LegoS32 delta = 0;
 			for (LegoU32 completedLapIndex = 0; completedLapIndex < lapsCompleted; completedLapIndex++) {
 				delta += static_cast<LegoS32>(p_racer->m_lapTimes[completedLapIndex]) -
-						 static_cast<LegoS32>(otherRacer->m_lapTimes[completedLapIndex]);
+						 static_cast<LegoS32>(m_roster.m_racers[racerIndex].m_lapTimes[completedLapIndex]);
 			}
 
-			for (LegoU32 remainingLapIndex = lapsCompleted; remainingLapIndex < otherLapsCompleted;
+			for (LegoU32 remainingLapIndex = lapsCompleted; otherLapsCompleted > remainingLapIndex;
 				 remainingLapIndex++) {
-				delta += static_cast<LegoS32>(otherRacer->m_lapTimes[remainingLapIndex]);
+				delta += static_cast<LegoS32>(m_roster.m_racers[racerIndex].m_lapTimes[remainingLapIndex]);
 			}
 
 			if (delta > result) {
@@ -1135,180 +1131,6 @@ LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
 
 	return result;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0043cda0
-__declspec(naked) LegoU32 RaceState::GetTimeBehind(Racer* p_racer)
-{
-	__asm {
-		sub esp, 0x18
-		push ebx
-		mov ebx, dword ptr [ecx + 0x178]
-		push ebp
-		push esi
-		mov esi, dword ptr [esp + 0x28]
-		push edi
-		xor edi, edi
-		mov ebp, dword ptr [esi + 0xce4]
-		cmp ebx, edi
-		je L_GetTimeBehind_0
-		xor eax, eax
-		xor edx, edx
-		cmp ebp, edi
-		jbe L_GetTimeBehind_1
-		lea ecx, [esi + 0xcec]
-		mov esi, ebp
-	L_GetTimeBehind_2:
-		add eax, dword ptr [ecx]
-		add ecx, 4
-		dec esi
-		jne L_GetTimeBehind_2
-	L_GetTimeBehind_1:
-		mov cl, byte ptr [ebx + 0x3b4]
-		test cl, 8
-		mov byte ptr [esp + 0x2c], cl
-		je L_GetTimeBehind_3
-		test ebp, ebp
-		jbe L_GetTimeBehind_3
-		mov ecx, dword ptr [ebx + 0xc]
-		mov esi, ebp
-	L_GetTimeBehind_4:
-		add edx, dword ptr [ecx]
-		add ecx, 4
-		dec esi
-		jne L_GetTimeBehind_4
-		mov cl, byte ptr [esp + 0x2c]
-	L_GetTimeBehind_3:
-		test cl, 1
-		je L_GetTimeBehind_5
-		test ebp, ebp
-		jbe L_GetTimeBehind_5
-		mov ecx, dword ptr [ebx + 0x10]
-	L_GetTimeBehind_6:
-		mov esi, dword ptr [ecx]
-		add ecx, 4
-		add edi, esi
-		dec ebp
-		jne L_GetTimeBehind_6
-		test edi, edi
-		je L_GetTimeBehind_5
-		cmp edx, edi
-		ja L_GetTimeBehind_7
-	L_GetTimeBehind_5:
-		test edx, edx
-		jne L_GetTimeBehind_8
-	L_GetTimeBehind_7:
-		test edi, edi
-		mov edx, edi
-		je L_GetTimeBehind_9
-	L_GetTimeBehind_8:
-		cmp edx, eax
-		jae L_GetTimeBehind_9
-		pop edi
-		pop esi
-		pop ebp
-		sub eax, edx
-		pop ebx
-		add esp, 0x18
-		ret 4
-	L_GetTimeBehind_0:
-		cmp dword ptr [esi + 0xd00], 1
-		jne L_GetTimeBehind_10
-	L_GetTimeBehind_9:
-		pop edi
-		pop esi
-		pop ebp
-		xor eax, eax
-		pop ebx
-		add esp, 0x18
-		ret 4
-	L_GetTimeBehind_10:
-		xor eax, eax
-		mov dword ptr [esp + 0x14], edi
-		mov al, byte ptr [ecx + 0x29c]
-		mov esi, eax
-		cmp ebp, esi
-		mov dword ptr [esp + 0x24], esi
-		jbe L_GetTimeBehind_11
-		mov ebp, esi
-	L_GetTimeBehind_11:
-		mov edx, dword ptr [ecx + 0x144]
-		cmp edx, edi
-		jbe L_GetTimeBehind_12
-		mov eax, dword ptr [ecx + 0x140]
-		mov dword ptr [esp + 0x20], edx
-		mov dword ptr [esp + 0x18], eax
-		lea ebx, [eax + 0xcec]
-		lea ecx, [eax + ebp*4 + 0xcec]
-		mov dword ptr [esp + 0x1c], ebx
-		mov dword ptr [esp + 0x10], ecx
-	L_GetTimeBehind_19:
-		mov edx, dword ptr [esp + 0x2c]
-		cmp eax, edx
-		je L_GetTimeBehind_13
-		mov edi, dword ptr [ebx - 8]
-		cmp edi, esi
-		jbe L_GetTimeBehind_14
-		mov edi, esi
-	L_GetTimeBehind_14:
-		cmp ebp, edi
-		ja L_GetTimeBehind_13
-		xor ecx, ecx
-		test ebp, ebp
-		jbe L_GetTimeBehind_15
-		lea esi, [edx + 0xcec]
-		mov edx, ebx
-		mov ebx, ebp
-	L_GetTimeBehind_16:
-		mov eax, dword ptr [esi]
-		add esi, 4
-		sub eax, dword ptr [edx]
-		add edx, 4
-		add ecx, eax
-		dec ebx
-		jne L_GetTimeBehind_16
-		mov esi, dword ptr [esp + 0x24]
-		mov eax, dword ptr [esp + 0x18]
-		mov ebx, dword ptr [esp + 0x1c]
-	L_GetTimeBehind_15:
-		cmp edi, ebp
-		jbe L_GetTimeBehind_17
-		mov edx, dword ptr [esp + 0x10]
-		sub edi, ebp
-	L_GetTimeBehind_18:
-		add ecx, dword ptr [edx]
-		add edx, 4
-		dec edi
-		jne L_GetTimeBehind_18
-	L_GetTimeBehind_17:
-		cmp ecx, dword ptr [esp + 0x14]
-		jle L_GetTimeBehind_13
-		mov dword ptr [esp + 0x14], ecx
-	L_GetTimeBehind_13:
-		mov edx, dword ptr [esp + 0x10]
-		mov ecx, dword ptr [esp + 0x20]
-		add eax, 0xe34
-		add ebx, 0xe34
-		add edx, 0xe34
-		dec ecx
-		mov dword ptr [esp + 0x18], eax
-		mov dword ptr [esp + 0x1c], ebx
-		mov dword ptr [esp + 0x10], edx
-		mov dword ptr [esp + 0x20], ecx
-		jne L_GetTimeBehind_19
-	L_GetTimeBehind_12:
-		mov eax, dword ptr [esp + 0x14]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x18
-		ret 4
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0043cf30
 void RaceState::ComputeStandingsDeltas(Racer* p_racer, Racer::StandingsDeltaEntry* p_entries)
