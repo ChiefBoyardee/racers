@@ -141,20 +141,14 @@ void MenuWidget::RemoveFromParent()
 
 	if (m_nextSibling) {
 		m_nextSibling->m_prevSibling = m_prevSibling;
-		m_nextSibling = 0;
-		m_prevSibling = 0;
-		m_parent = 0;
-		m_flags &= 0xfb;
-		return;
 	}
-
-	if (m_parent) {
+	else if (m_parent) {
 		m_parent->m_lastChild = m_prevSibling;
 	}
 
-	m_nextSibling = 0;
-	m_prevSibling = 0;
-	m_parent = 0;
+	m_nextSibling = NULL;
+	m_prevSibling = NULL;
+	m_parent = NULL;
 	m_flags &= 0xfb;
 }
 
