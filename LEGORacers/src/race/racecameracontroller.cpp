@@ -94,7 +94,9 @@ void RaceCameraController::SetPitchAngle(LegoFloat p_degrees)
 // FUNCTION: LEGORACERS 0x00427be0
 void RaceCameraController::SetHeightAngle(LegoFloat p_degrees)
 {
-	m_heightSine = static_cast<LegoFloat>(sin(g_degreesToRadians * p_degrees));
+	LegoFloat radians = p_degrees;
+	radians *= g_degreesToRadians;
+	m_heightSine = static_cast<LegoFloat>(sin(radians));
 }
 
 // FUNCTION: LEGORACERS 0x00427c00
@@ -353,9 +355,8 @@ void RaceCameraController::SetRacer(Racer* p_racer)
 	if (m_racer != p_racer) {
 		m_racer = p_racer;
 		m_racer->m_visuals.m_carEntity->GetPosition(&m_lastRacerPosition);
-		LegoU32 flags = m_racer->m_driveController.m_flags;
+		m_turboActive = m_racer->m_driveController.m_flags & 1;
 		m_followDistanceScale = 1.0f;
-		m_turboActive = flags & 1;
 		GolAnimatedEntity* entity = m_racer->m_visuals.m_carEntity;
 		m_viewDirection.m_x = entity->GetOrientation().m_rows[0].m_x;
 		m_viewDirection.m_y = entity->GetOrientation().m_rows[0].m_y;
