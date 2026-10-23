@@ -357,41 +357,57 @@ void BeamMesh::EmitQuads()
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x004944e0
 void BeamMesh::FlushWindow()
 {
 	LegoU32 vertexCount = m_vertexCursor - m_runStartVertex;
 	LegoU32 triangleCount = m_indexCursor - m_runStartIndex;
-	GolModelBase* model = m_model;
 
-	if (vertexCount != 0 || triangleCount != 0) {
+	if (triangleCount != 0 || vertexCount != 0) {
 		if (!(m_flags & c_flagSectionAttached)) {
-			LegoU32 groupIndex = m_groupCursor++;
+			LegoU32 sectionIndex = m_sectionIndex;
+			LegoU32 groupIndex = m_groupCursor;
+			m_groupCursor = groupIndex + 1;
+
+			GolModelBase* model = m_model;
 			model->GetMutableGroups()[groupIndex] = c_groupAttachSection;
-			model->GetMutableGroups()[groupIndex] |= m_sectionIndex & 0x00ffffff;
+			model->GetMutableGroups()[groupIndex] |= sectionIndex & 0x00ffffff;
 			model->SetDirty(TRUE);
 			m_flags |= c_flagSectionAttached;
 		}
 
-		LegoU32 groupIndex = m_groupCursor++;
+		LegoU32 groupIndex = m_groupCursor;
+		LegoU32 runStartVertex = m_runStartVertex;
+		LegoS32 windowBaseVertex = m_windowBaseVertex;
+		m_groupCursor = groupIndex + 1;
+
+		GolModelBase* model = m_model;
 		model->GetMutableGroups()[groupIndex] = 0;
-		model->GetMutableGroups()[groupIndex] |= (m_windowBaseVertex & 0x3f) << 22;
-		model->GetMutableGroups()[groupIndex] |= ((vertexCount - 1) << 16) & 0x003f0000;
-		model->GetMutableGroups()[groupIndex] |= m_runStartVertex & 0xffff;
+		model->GetMutableGroups()[groupIndex] |= (windowBaseVertex & 0x3f) << 22;
+		model->GetMutableGroups()[groupIndex] |= ((vertexCount + 0xffff) << 16) & 0x003f0000;
+		model->GetMutableGroups()[groupIndex] |= runStartVertex & 0xffff;
 		model->SetDirty(TRUE);
 
-		groupIndex = m_groupCursor++;
+		groupIndex = m_groupCursor;
+		LegoU32 runStartIndex = m_runStartIndex;
+		m_groupCursor = groupIndex + 1;
+
+		model = m_model;
 		model->GetMutableGroups()[groupIndex] = c_groupTriangleRun;
 		model->GetMutableGroups()[groupIndex] |= (triangleCount & 0x7f) << 16;
-		model->GetMutableGroups()[groupIndex] |= m_runStartIndex & 0xffff;
+		model->GetMutableGroups()[groupIndex] |= runStartIndex & 0xffff;
 		model->SetDirty(TRUE);
 	}
 
-	LegoU32 groupIndex = m_groupCursor++;
+	LegoU32 groupIndex = m_groupCursor;
+	LegoU32 ringVertexCount = m_ringVertexCount;
+	LegoU32 ringStartVertex = m_vertexCursor - ringVertexCount;
+	m_groupCursor = groupIndex + 1;
+
+	GolModelBase* model = m_model;
 	model->GetMutableGroups()[groupIndex] = 0;
-	model->GetMutableGroups()[groupIndex] |= ((m_ringVertexCount - 1) << 16) & 0x003f0000;
-	model->GetMutableGroups()[groupIndex] |= (m_vertexCursor - m_ringVertexCount) & 0xffff;
+	model->GetMutableGroups()[groupIndex] |= ((ringVertexCount + 0xffff) << 16) & 0x003f0000;
+	model->GetMutableGroups()[groupIndex] |= ringStartVertex & 0xffff;
 	model->SetDirty(TRUE);
 
 	m_ringVertexIndex = m_ringVertexCount;
@@ -401,283 +417,54 @@ void BeamMesh::FlushWindow()
 	m_runStartIndex = m_indexCursor;
 }
 
-#else
-
-// FUNCTION: LEGORACERS 0x004944e0
-__declspec(naked) void BeamMesh::FlushWindow()
-{
-	__asm {
-		push ecx
-		mov eax, dword ptr [ecx + 0xbc]
-		mov edx, dword ptr [ecx + 0xc4]
-		push ebx
-		push ebp
-		push esi
-		mov esi, dword ptr [ecx + 0xc0]
-		push edi
-		mov edi, dword ptr [ecx + 0xc8]
-		sub eax, esi
-		sub edi, edx
-		mov dword ptr [esp + 0x10], eax
-		mov ebp, 1
-		jne L_FlushWindow_0
-		test eax, eax
-		je L_FlushWindow_1
-	L_FlushWindow_0:
-		test byte ptr [ecx + 0x140], 4
-		jne L_FlushWindow_2
-		mov edx, dword ptr [ecx + 0xcc]
-		mov eax, dword ptr [ecx + 0xd0]
-		and eax, 0xffffff
-		lea esi, [edx + 1]
-		mov dword ptr [ecx + 0xcc], esi
-		mov esi, dword ptr [ecx + 4]
-		mov ebx, dword ptr [esi + 0x24]
-		mov dword ptr [ebx + edx*4], 0xa0000000
-		mov ebx, dword ptr [esi + 0x24]
-		lea edx, [ebx + edx*4]
-		mov ebx, dword ptr [edx]
-		or ebx, eax
-		mov dword ptr [edx], ebx
-		mov dword ptr [esi + 0x3c], ebp
-		mov eax, dword ptr [ecx + 0x140]
-		or al, 4
-		mov dword ptr [ecx + 0x140], eax
-	L_FlushWindow_2:
-		mov eax, dword ptr [ecx + 0xcc]
-		mov ebx, dword ptr [ecx + 0xc0]
-		mov esi, dword ptr [ecx + 0xb0]
-		and ebx, 0xffff
-		lea edx, [eax + 1]
-		and esi, 0x3f
-		mov dword ptr [ecx + 0xcc], edx
-		mov edx, dword ptr [ecx + 4]
-		shl esi, 0x16
-		mov ebp, dword ptr [edx + 0x24]
-		and edi, 0x7f
-		shl edi, 0x10
-		mov dword ptr [ebp + eax*4], 0
-		mov ebp, dword ptr [edx + 0x24]
-		or dword ptr [ebp + eax*4], esi
-		mov esi, dword ptr [edx + 0x24]
-		lea ebp, [ebp + eax*4]
-		mov ebp, dword ptr [esp + 0x10]
-		lea esi, [esi + eax*4]
-		add ebp, 0xffff
-		shl ebp, 0x10
-		and ebp, 0x3f0000
-		or dword ptr [esi], ebp
-		mov esi, dword ptr [edx + 0x24]
-		mov ebp, dword ptr [esi + eax*4]
-		lea eax, [esi + eax*4]
-		or ebp, ebx
-		mov dword ptr [eax], ebp
-		mov ebp, 1
-		mov dword ptr [edx + 0x3c], ebp
-		mov eax, dword ptr [ecx + 0xcc]
-		mov esi, dword ptr [ecx + 0xc4]
-		lea edx, [eax + 1]
-		and esi, 0xffff
-		mov dword ptr [ecx + 0xcc], edx
-		mov edx, dword ptr [ecx + 4]
-		mov ebx, dword ptr [edx + 0x24]
-		mov dword ptr [ebx + eax*4], 0x20000000
-		mov ebx, dword ptr [edx + 0x24]
-		or dword ptr [ebx + eax*4], edi
-		mov edi, dword ptr [edx + 0x24]
-		lea ebx, [ebx + eax*4]
-		lea eax, [edi + eax*4]
-		mov edi, dword ptr [eax]
-		or edi, esi
-		mov dword ptr [eax], edi
-		mov dword ptr [edx + 0x3c], ebp
-	L_FlushWindow_1:
-		mov edx, dword ptr [ecx + 0xcc]
-		mov edi, dword ptr [ecx + 0xe8]
-		mov eax, dword ptr [ecx + 0xbc]
-		lea esi, [edx + 1]
-		sub eax, edi
-		mov dword ptr [ecx + 0xcc], esi
-		mov esi, dword ptr [ecx + 4]
-		add edi, 0xffff
-		and eax, 0xffff
-		mov ebx, dword ptr [esi + 0x24]
-		shl edi, 0x10
-		mov dword ptr [ebx + edx*4], 0
-		mov ebx, dword ptr [esi + 0x24]
-		and edi, 0x3f0000
-		or dword ptr [ebx + edx*4], edi
-		mov edi, dword ptr [esi + 0x24]
-		lea ebx, [ebx + edx*4]
-		lea edx, [edi + edx*4]
-		mov edi, dword ptr [edx]
-		or edi, eax
-		mov dword ptr [edx], edi
-		mov dword ptr [esi + 0x3c], ebp
-		mov eax, dword ptr [ecx + 0xe8]
-		mov edx, dword ptr [ecx + 0xc8]
-		mov dword ptr [ecx + 0xb4], eax
-		mov dword ptr [ecx + 0xb0], eax
-		mov eax, dword ptr [ecx + 0xbc]
-		pop edi
-		pop esi
-		pop ebp
-		mov dword ptr [ecx + 0xb8], 0
-		mov dword ptr [ecx + 0xc0], eax
-		mov dword ptr [ecx + 0xc4], edx
-		pop ebx
-		pop ecx
-		ret
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x004946b0
 void BeamMesh::FlushRuns()
 {
 	LegoU32 vertexCount = m_vertexCursor - m_runStartVertex;
 	LegoU32 triangleCount = m_indexCursor - m_runStartIndex;
 
-	if (vertexCount == 0 && triangleCount == 0) {
+	if (triangleCount == 0 && vertexCount == 0) {
 		return;
 	}
 
 	if (!(m_flags & c_flagSectionAttached)) {
-		LegoU32 groupIndex = m_groupCursor++;
-		m_model->GetMutableGroups()[groupIndex] = c_groupAttachSection;
-		m_model->GetMutableGroups()[groupIndex] |= m_sectionIndex & 0x00ffffff;
-		m_model->SetDirty(TRUE);
+		LegoU32 sectionIndex = m_sectionIndex;
+		LegoU32 groupIndex = m_groupCursor;
+		m_groupCursor = groupIndex + 1;
+
+		GolModelBase* model = m_model;
+		model->GetMutableGroups()[groupIndex] = c_groupAttachSection;
+		model->GetMutableGroups()[groupIndex] |= sectionIndex & 0x00ffffff;
+		model->SetDirty(TRUE);
 		m_flags |= c_flagSectionAttached;
 	}
 
-	LegoU32 groupIndex = m_groupCursor++;
-	m_model->GetMutableGroups()[groupIndex] = 0;
-	m_model->GetMutableGroups()[groupIndex] |= (m_windowBaseVertex & 0x3f) << 22;
-	m_model->GetMutableGroups()[groupIndex] |= ((vertexCount - 1) << 16) & 0x003f0000;
-	m_model->GetMutableGroups()[groupIndex] |= m_runStartVertex & 0xffff;
-	m_model->SetDirty(TRUE);
+	LegoU32 groupIndex = m_groupCursor;
+	LegoU32 runStartVertex = m_runStartVertex;
+	LegoS32 windowBaseVertex = m_windowBaseVertex;
+	m_groupCursor = groupIndex + 1;
 
-	groupIndex = m_groupCursor++;
-	m_model->GetMutableGroups()[groupIndex] = c_groupTriangleRun;
-	m_model->GetMutableGroups()[groupIndex] |= (triangleCount & 0x7f) << 16;
-	m_model->GetMutableGroups()[groupIndex] |= m_runStartIndex & 0xffff;
-	m_model->SetDirty(TRUE);
+	GolModelBase* model = m_model;
+	model->GetMutableGroups()[groupIndex] = 0;
+	model->GetMutableGroups()[groupIndex] |= (windowBaseVertex & 0x3f) << 22;
+	model->GetMutableGroups()[groupIndex] |= ((vertexCount + 0xffff) << 16) & 0x003f0000;
+	model->GetMutableGroups()[groupIndex] |= runStartVertex & 0xffff;
+	model->SetDirty(TRUE);
+
+	groupIndex = m_groupCursor;
+	LegoU32 runStartIndex = m_runStartIndex;
+	m_groupCursor = groupIndex + 1;
+
+	model = m_model;
+	model->GetMutableGroups()[groupIndex] = c_groupTriangleRun;
+	model->GetMutableGroups()[groupIndex] |= (triangleCount & 0x7f) << 16;
+	model->GetMutableGroups()[groupIndex] |= runStartIndex & 0xffff;
+	model->SetDirty(TRUE);
 
 	m_windowBaseVertex += vertexCount;
 	m_runStartVertex = m_vertexCursor;
 	m_runStartIndex = m_indexCursor;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x004946b0
-__declspec(naked) void BeamMesh::FlushRuns()
-{
-	__asm {
-		push ecx
-		mov eax, dword ptr [ecx + 0xbc]
-		mov edx, dword ptr [ecx + 0xc4]
-		push esi
-		mov esi, dword ptr [ecx + 0xc0]
-		push edi
-		mov edi, dword ptr [ecx + 0xc8]
-		sub eax, esi
-		sub edi, edx
-		mov dword ptr [esp + 8], eax
-		jne L_FlushRuns_0
-		test eax, eax
-		je L_FlushRuns_1
-	L_FlushRuns_0:
-		mov al, byte ptr [ecx + 0x140]
-		push ebx
-		mov ebx, 4
-		push ebp
-		test al, bl
-		jne L_FlushRuns_2
-		mov edx, dword ptr [ecx + 0xcc]
-		mov eax, dword ptr [ecx + 0xd0]
-		and eax, 0xffffff
-		lea esi, [edx + 1]
-		mov dword ptr [ecx + 0xcc], esi
-		mov esi, dword ptr [ecx + 4]
-		mov ebp, dword ptr [esi + 0x24]
-		mov dword ptr [ebp + edx*4], 0xa0000000
-		mov ebp, dword ptr [esi + 0x24]
-		lea edx, [ebp + edx*4]
-		mov ebp, dword ptr [edx]
-		or ebp, eax
-		mov dword ptr [edx], ebp
-		mov dword ptr [esi + 0x3c], 1
-		or dword ptr [ecx + 0x140], ebx
-	L_FlushRuns_2:
-		mov eax, dword ptr [ecx + 0xcc]
-		mov ebx, dword ptr [ecx + 0xc0]
-		mov esi, dword ptr [ecx + 0xb0]
-		and ebx, 0xffff
-		lea edx, [eax + 1]
-		and esi, 0x3f
-		mov dword ptr [ecx + 0xcc], edx
-		mov edx, dword ptr [ecx + 4]
-		shl esi, 0x16
-		mov ebp, dword ptr [edx + 0x24]
-		and edi, 0x7f
-		shl edi, 0x10
-		mov dword ptr [ebp + eax*4], 0
-		mov ebp, dword ptr [edx + 0x24]
-		or dword ptr [ebp + eax*4], esi
-		mov esi, dword ptr [edx + 0x24]
-		lea ebp, [ebp + eax*4]
-		mov ebp, dword ptr [esp + 0x10]
-		lea esi, [esi + eax*4]
-		add ebp, 0xffff
-		shl ebp, 0x10
-		and ebp, 0x3f0000
-		or dword ptr [esi], ebp
-		mov esi, dword ptr [edx + 0x24]
-		mov ebp, dword ptr [esi + eax*4]
-		lea eax, [esi + eax*4]
-		or ebp, ebx
-		mov dword ptr [eax], ebp
-		mov ebp, 1
-		mov dword ptr [edx + 0x3c], ebp
-		mov eax, dword ptr [ecx + 0xcc]
-		mov esi, dword ptr [ecx + 0xc4]
-		lea edx, [eax + 1]
-		and esi, 0xffff
-		mov dword ptr [ecx + 0xcc], edx
-		mov edx, dword ptr [ecx + 4]
-		mov ebx, dword ptr [edx + 0x24]
-		mov dword ptr [ebx + eax*4], 0x20000000
-		mov ebx, dword ptr [edx + 0x24]
-		or dword ptr [ebx + eax*4], edi
-		mov edi, dword ptr [edx + 0x24]
-		lea ebx, [ebx + eax*4]
-		lea eax, [edi + eax*4]
-		mov edi, dword ptr [eax]
-		or edi, esi
-		mov dword ptr [eax], edi
-		mov eax, dword ptr [esp + 0x10]
-		mov dword ptr [edx + 0x3c], ebp
-		mov edx, dword ptr [ecx + 0xb0]
-		add edx, eax
-		mov eax, dword ptr [ecx + 0xc8]
-		mov dword ptr [ecx + 0xb0], edx
-		mov edx, dword ptr [ecx + 0xbc]
-		pop ebp
-		mov dword ptr [ecx + 0xc0], edx
-		mov dword ptr [ecx + 0xc4], eax
-		pop ebx
-	L_FlushRuns_1:
-		pop edi
-		pop esi
-		pop ecx
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x00494820
 void BeamMesh::SetColors(
