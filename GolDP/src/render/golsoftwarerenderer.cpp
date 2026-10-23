@@ -646,43 +646,43 @@ __declspec(naked) void GolSoftwareRenderer::FUN_100417c0(TriangleCommand* p_cmds
 		push esi
 		or edx, edx
 		mov esi, eax
-		je done17c0
+		je done
 		push edi
 		mov edi, dword ptr [ecx + 0x4c]
 		push ebp
 		push ebx
 		lea edi, [edi + 8]
-	loop17c0:
+	sortKeyLoop:
 		mov ebx, dword ptr [esi + 8]
-		mov eax, 0ffffh
+		mov eax, 0xffff
 		mov ebp, dword ptr [esi + 0xc]
 		and eax, ebx
-		shr ebx, 0bh
-		and ebp, 0ffffh
+		shr ebx, 11
+		and ebp, 0xffff
 		shl eax, 5
-		and ebx, 01fffe0h
+		and ebx, 0x1fffe0
 		shl ebp, 5
 		nop
 		mov eax, dword ptr [eax + edi]
 		mov ebx, dword ptr [ebx + edi]
 		cmp eax, ebx
 		mov ebp, dword ptr [ebp + edi]
-		jge skip117c0
+		jge keepKey1
 		mov eax, ebx
-	skip117c0:
+	keepKey1:
 		cmp eax, ebp
 		lea ebx, [esi + 4]
-		jge skip217c0
+		jge storeKey
 		mov eax, ebp
-	skip217c0:
+	storeKey:
 		dec edx
 		lea esi, [esi + 0x14]
 		mov dword ptr [ebx], eax
-		jne loop17c0
+		jne sortKeyLoop
 		pop ebx
 		pop ebp
 		pop edi
-	done17c0:
+	done:
 		pop esi
 		ret 8
 	}
@@ -846,20 +846,20 @@ __declspec(naked) void GolSoftwareRenderer::DrawCommandList()
 		push edi
 		or esi, esi
 		mov edi, dword ptr [ecx + 0x4c]
-		je done19b0
+		je done
 		lea ecx, [ecx]
 		push ebx
 		push ebp
 		push ecx
-	loop19b0:
+	drawLoop:
 		mov ebx, dword ptr [esi + 8]
-		mov eax, 0ffffh
+		mov eax, 0xffff
 		mov ebp, dword ptr [esi + 0xc]
 		and eax, ebx
-		shr ebx, 0bh
-		and ebp, 0ffffh
+		shr ebx, 11
+		and ebp, 0xffff
 		shl eax, 5
-		and ebx, 01fffe0h
+		and ebx, 0x1fffe0
 		shl ebp, 5
 		mov edx, dword ptr [esi + 0x10]
 		lea eax, [eax + edi]
@@ -880,11 +880,11 @@ __declspec(naked) void GolSoftwareRenderer::DrawCommandList()
 		mov esi, dword ptr [esi]
 		add esp, 0x10
 		or ebx, esi
-		jne loop19b0
+		jne drawLoop
 		pop eax
 		pop ebp
 		pop ebx
-	done19b0:
+	done:
 		pop edi
 		pop esi
 		ret
