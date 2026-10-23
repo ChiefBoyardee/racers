@@ -421,8 +421,7 @@ LegoU32 GolFontBase::PackGlyphTextures(GolD3DRenderDevice* p_renderer, GolSurfac
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x1001e870
 void GolFontBase::CopyGlyphsToTextures()
 {
 	LegoU32 currentSurface = 0;
@@ -431,144 +430,27 @@ void GolFontBase::CopyGlyphsToTextures()
 	sourceRect.m_top = 0;
 	sourceRect.m_bottom = m_fontHeight;
 
-	LegoU8* sourcePixels;
-	LegoU32 sourcePitch;
-	g_fontSourceImage->LockPixels(&sourcePixels, &sourcePitch, GolSurface::c_lockRequestRead);
-
-	LegoU8* texturePixels;
-	LegoU32 texturePitch;
-	texture->LockPixels(&texturePixels, &texturePitch, GolSurface::c_lockRequestWrite);
+	LegoU8* pixels;
+	LegoU32 pitch;
+	g_fontSourceImage->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestRead);
+	texture->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestWrite);
 
 	for (LegoU32 i = 0; i < m_glyphCount; i++) {
-		Glyph* glyph = &m_glyphs[i];
-		if (glyph->m_surfaceIndex != currentSurface) {
+		if (m_glyphs[i].m_surfaceIndex != currentSurface) {
 			texture->UnlockPixels();
-			currentSurface = glyph->m_surfaceIndex;
+			currentSurface = m_glyphs[i].m_surfaceIndex;
 			texture = GetTexture(currentSurface);
-			texture->LockPixels(&texturePixels, &texturePitch, GolSurface::c_lockRequestWrite);
+			texture->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestWrite);
 		}
 
-		sourceRect.m_left = glyph->m_sourceX;
-		sourceRect.m_right = sourceRect.m_left + glyph->m_width;
-		texture->Blit(glyph->m_textureX, glyph->m_textureY, &g_palettedTexture, &sourceRect);
+		sourceRect.m_left = m_glyphs[i].m_sourceX;
+		sourceRect.m_right = sourceRect.m_left + m_glyphs[i].m_width;
+		texture->Blit(m_glyphs[i].m_textureX, m_glyphs[i].m_textureY, &g_palettedTexture, &sourceRect);
 	}
 
 	texture->UnlockPixels();
 	g_fontSourceImage->UnlockPixels();
 }
-
-#else
-
-// FUNCTION: GOLDP 0x1001e870
-__declspec(naked) void GolFontBase::CopyGlyphsToTextures()
-{
-	__asm {
-		sub esp, 0x1c
-		push ebx
-		push ebp
-		push esi
-		push edi
-		mov edi, ecx
-		xor ebx, ebx
-		push ebx
-		xor ebp, ebp
-		mov eax, dword ptr [edi]
-		call dword ptr [eax + 8]
-		mov ecx, dword ptr [edi + 0x1c]
-		mov esi, eax
-		mov dword ptr [esp + 0x28], ecx
-		mov ecx, dword ptr [g_fontSourceImage]
-		lea eax, [esp + 0x10]
-		push 1
-		push eax
-		mov dword ptr [esp + 0x28], ebx
-		mov edx, dword ptr [ecx]
-		lea eax, [esp + 0x1c]
-		push eax
-		call dword ptr [edx + 4]
-		mov edx, dword ptr [esi]
-		lea eax, [esp + 0x10]
-		push 2
-		lea ecx, [esp + 0x18]
-		push eax
-		push ecx
-		mov ecx, esi
-		call dword ptr [edx + 4]
-		mov eax, dword ptr [edi + 0x24]
-		mov dword ptr [esp + 0x18], ebx
-		cmp eax, ebx
-		jbe L_CopyGlyphsToTextures_0
-	L_CopyGlyphsToTextures_2:
-		mov edx, dword ptr [edi + 0x28]
-		xor eax, eax
-		mov ax, word ptr [edx + ebx + 4]
-		cmp eax, ebp
-		je L_CopyGlyphsToTextures_1
-		mov edx, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [edx + 8]
-		mov eax, dword ptr [edi + 0x28]
-		mov edx, dword ptr [edi]
-		xor ebp, ebp
-		mov ecx, edi
-		mov bp, word ptr [eax + ebx + 4]
-		push ebp
-		call dword ptr [edx + 8]
-		mov esi, eax
-		lea ecx, [esp + 0x10]
-		push 2
-		lea edx, [esp + 0x18]
-		mov eax, dword ptr [esi]
-		push ecx
-		push edx
-		mov ecx, esi
-		call dword ptr [eax + 4]
-	L_CopyGlyphsToTextures_1:
-		mov eax, dword ptr [edi + 0x28]
-		xor ecx, ecx
-		add eax, ebx
-		xor edx, edx
-		mov cx, word ptr [eax + 2]
-		mov dword ptr [esp + 0x1c], ecx
-		mov dx, word ptr [eax + 0xa]
-		add edx, ecx
-		lea ecx, [esp + 0x1c]
-		push ecx
-		xor ecx, ecx
-		mov dword ptr [esp + 0x28], edx
-		mov cx, word ptr [eax + 8]
-		mov edx, dword ptr [esi]
-		push offset g_palettedTexture
-		push ecx
-		xor ecx, ecx
-		mov cx, word ptr [eax + 6]
-		push ecx
-		mov ecx, esi
-		call dword ptr [edx + 0x24]
-		mov eax, dword ptr [esp + 0x18]
-		mov ecx, dword ptr [edi + 0x24]
-		inc eax
-		add ebx, 0xc
-		cmp eax, ecx
-		mov dword ptr [esp + 0x18], eax
-		jb L_CopyGlyphsToTextures_2
-	L_CopyGlyphsToTextures_0:
-		mov edx, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [edx + 8]
-		mov ecx, dword ptr [g_fontSourceImage]
-		mov eax, dword ptr [ecx]
-		call dword ptr [eax + 8]
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x1c
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: GOLDP 0x1001e970
 // FUNCTION: LEGORACERS 0x00408be0
@@ -1213,206 +1095,60 @@ LegoS32 GolFontBase::DrawGlyphRun(
 	return result;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x1001ef60
+// FUNCTION: LEGORACERS 0x00409560
 LegoBool32 GolFontBase::ComputeClipRect(GolRenderDevice* p_renderer, Rect* p_rect, Rect* p_result)
 {
-	Rect* result = p_result;
-
 	if (p_rect == NULL) {
-		result->m_left = 0;
-		result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
-		result->m_top = 0;
-		result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
-		return TRUE;
-	}
-
-	if (p_rect->m_right <= 0) {
-		return FALSE;
-	}
-
-	if (p_rect->m_left >= p_renderer->GetRenderTargetInfo()->GetWidth()) {
-		return FALSE;
-	}
-
-	if (p_rect->m_bottom <= 0) {
-		return FALSE;
-	}
-
-	if (p_rect->m_top >= p_renderer->GetRenderTargetInfo()->GetHeight()) {
-		return FALSE;
-	}
-
-	LegoS32 left = p_rect->m_left;
-	result->m_left = left < 0 ? 0 : left;
-
-	if (p_rect->m_top < 0) {
-		result->m_top = 0;
+		p_result->m_left = 0;
+		p_result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
+		p_result->m_top = 0;
+		p_result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
 	}
 	else {
-		result->m_top = p_rect->m_top;
-	}
+		if (p_rect->m_right <= 0) {
+			return FALSE;
+		}
 
-	if (p_rect->m_right > p_renderer->GetRenderTargetInfo()->GetWidth()) {
-		result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
-	}
-	else {
-		result->m_right = p_rect->m_right;
-	}
+		if (p_rect->m_left >= p_renderer->GetRenderTargetInfo()->GetWidth()) {
+			return FALSE;
+		}
 
-	if (p_rect->m_bottom > p_renderer->GetRenderTargetInfo()->GetHeight()) {
-		result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
-	}
-	else {
-		result->m_bottom = p_rect->m_bottom;
+		if (p_rect->m_bottom <= 0) {
+			return FALSE;
+		}
+
+		if (p_rect->m_top >= p_renderer->GetRenderTargetInfo()->GetHeight()) {
+			return FALSE;
+		}
+
+		LegoS32 left = p_rect->m_left;
+		p_result->m_left = left < 0 ? 0 : left;
+
+		if (p_rect->m_top < 0) {
+			p_result->m_top = 0;
+		}
+		else {
+			p_result->m_top = p_rect->m_top;
+		}
+
+		if (p_rect->m_right > p_renderer->GetRenderTargetInfo()->GetWidth()) {
+			p_result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
+		}
+		else {
+			p_result->m_right = p_rect->m_right;
+		}
+
+		if (p_rect->m_bottom > p_renderer->GetRenderTargetInfo()->GetHeight()) {
+			p_result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
+		}
+		else {
+			p_result->m_bottom = p_rect->m_bottom;
+		}
 	}
 
 	return TRUE;
 }
-
-#else
-
-// FUNCTION: GOLDP 0x1001ef60
-// FUNCTION: LEGORACERS 0x00409560
-__declspec(naked) LegoBool32 GolFontBase::ComputeClipRect(GolRenderDevice* p_renderer, Rect* p_rect, Rect* p_result)
-{
-	__asm {
-		push ebx
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x14]
-		test edi, edi
-		jne L_ComputeClipRect_0
-		mov esi, dword ptr [esp + 0x18]
-		mov dword ptr [esi], edi
-		mov edi, dword ptr [esp + 0x10]
-		mov ecx, edi
-		mov eax, dword ptr [edi]
-		call dword ptr [eax + 0x14]
-		xor ecx, ecx
-		mov cx, word ptr [eax + 0x2a]
-		mov dword ptr [esi + 4], 0
-		mov dword ptr [esi + 8], ecx
-		mov edx, dword ptr [edi]
-		mov ecx, edi
-		call dword ptr [edx + 0x14]
-		xor ecx, ecx
-		pop edi
-		mov cx, word ptr [eax + 0x2c]
-		mov eax, 1
-		mov dword ptr [esi + 0xc], ecx
-		pop esi
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_0:
-		mov eax, dword ptr [edi + 8]
-		test eax, eax
-		jg L_ComputeClipRect_1
-		pop edi
-		pop esi
-		xor eax, eax
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_1:
-		mov esi, dword ptr [esp + 0x10]
-		mov ecx, esi
-		mov edx, dword ptr [esi]
-		call dword ptr [edx + 0x14]
-		xor ecx, ecx
-		mov cx, word ptr [eax + 0x2a]
-		mov eax, dword ptr [edi]
-		cmp eax, ecx
-		jl L_ComputeClipRect_2
-		pop edi
-		pop esi
-		xor eax, eax
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_2:
-		mov eax, dword ptr [edi + 0xc]
-		test eax, eax
-		jg L_ComputeClipRect_3
-		pop edi
-		pop esi
-		xor eax, eax
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_3:
-		mov edx, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [edx + 0x14]
-		xor ecx, ecx
-		mov cx, word ptr [eax + 0x2c]
-		mov eax, dword ptr [edi + 4]
-		cmp eax, ecx
-		jl L_ComputeClipRect_4
-		pop edi
-		pop esi
-		xor eax, eax
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_4:
-		mov eax, dword ptr [edi]
-		mov ebx, dword ptr [esp + 0x18]
-		xor edx, edx
-		test eax, eax
-		setl dl
-		dec edx
-		and edx, eax
-		mov dword ptr [ebx], edx
-		mov eax, dword ptr [edi + 4]
-		test eax, eax
-		jge L_ComputeClipRect_5
-		mov dword ptr [ebx + 4], 0
-		jmp L_ComputeClipRect_6
-	L_ComputeClipRect_5:
-		mov dword ptr [ebx + 4], eax
-	L_ComputeClipRect_6:
-		mov eax, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [eax + 0x14]
-		mov ecx, dword ptr [edi + 8]
-		xor edx, edx
-		mov dx, word ptr [eax + 0x2a]
-		cmp ecx, edx
-		jle L_ComputeClipRect_7
-		mov eax, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [eax + 0x14]
-		xor ecx, ecx
-		mov cx, word ptr [eax + 0x2a]
-	L_ComputeClipRect_7:
-		mov dword ptr [ebx + 8], ecx
-		mov edx, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [edx + 0x14]
-		mov edi, dword ptr [edi + 0xc]
-		xor ecx, ecx
-		mov cx, word ptr [eax + 0x2c]
-		cmp edi, ecx
-		jle L_ComputeClipRect_8
-		mov edx, dword ptr [esi]
-		mov ecx, esi
-		call dword ptr [edx + 0x14]
-		xor ecx, ecx
-		pop edi
-		mov cx, word ptr [eax + 0x2c]
-		pop esi
-		mov dword ptr [ebx + 0xc], ecx
-		mov eax, 1
-		pop ebx
-		ret 0xc
-	L_ComputeClipRect_8:
-		mov dword ptr [ebx + 0xc], edi
-		pop edi
-		pop esi
-		mov eax, 1
-		pop ebx
-		ret 0xc
-	}
-}
-
-#endif
 
 // FUNCTION: GOLDP 0x1001f090
 // FUNCTION: LEGORACERS 0x00409690
