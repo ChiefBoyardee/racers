@@ -430,26 +430,22 @@ void GolFontBase::CopyGlyphsToTextures()
 	sourceRect.m_top = 0;
 	sourceRect.m_bottom = m_fontHeight;
 
-	LegoU8* sourcePixels;
-	LegoU32 sourcePitch;
-	g_fontSourceImage->LockPixels(&sourcePixels, &sourcePitch, GolSurface::c_lockRequestRead);
-
-	LegoU8* texturePixels;
-	LegoU32 texturePitch;
-	texture->LockPixels(&texturePixels, &texturePitch, GolSurface::c_lockRequestWrite);
+	LegoU8* pixels;
+	LegoU32 pitch;
+	g_fontSourceImage->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestRead);
+	texture->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestWrite);
 
 	for (LegoU32 i = 0; i < m_glyphCount; i++) {
-		Glyph* glyph = &m_glyphs[i];
-		if (glyph->m_surfaceIndex != currentSurface) {
+		if (m_glyphs[i].m_surfaceIndex != currentSurface) {
 			texture->UnlockPixels();
-			currentSurface = glyph->m_surfaceIndex;
+			currentSurface = m_glyphs[i].m_surfaceIndex;
 			texture = GetTexture(currentSurface);
-			texture->LockPixels(&texturePixels, &texturePitch, GolSurface::c_lockRequestWrite);
+			texture->LockPixels(&pixels, &pitch, GolSurface::c_lockRequestWrite);
 		}
 
-		sourceRect.m_left = glyph->m_sourceX;
-		sourceRect.m_right = sourceRect.m_left + glyph->m_width;
-		texture->Blit(glyph->m_textureX, glyph->m_textureY, &g_palettedTexture, &sourceRect);
+		sourceRect.m_left = m_glyphs[i].m_sourceX;
+		sourceRect.m_right = sourceRect.m_left + m_glyphs[i].m_width;
+		texture->Blit(m_glyphs[i].m_textureX, m_glyphs[i].m_textureY, &g_palettedTexture, &sourceRect);
 	}
 
 	texture->UnlockPixels();
@@ -1103,54 +1099,52 @@ LegoS32 GolFontBase::DrawGlyphRun(
 // FUNCTION: LEGORACERS 0x00409560
 LegoBool32 GolFontBase::ComputeClipRect(GolRenderDevice* p_renderer, Rect* p_rect, Rect* p_result)
 {
-	Rect* result = p_result;
-
 	if (p_rect == NULL) {
-		result->m_left = 0;
-		result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
-		result->m_top = 0;
-		result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
-		return TRUE;
-	}
-
-	if (p_rect->m_right <= 0) {
-		return FALSE;
-	}
-
-	if (p_rect->m_left >= p_renderer->GetRenderTargetInfo()->GetWidth()) {
-		return FALSE;
-	}
-
-	if (p_rect->m_bottom <= 0) {
-		return FALSE;
-	}
-
-	if (p_rect->m_top >= p_renderer->GetRenderTargetInfo()->GetHeight()) {
-		return FALSE;
-	}
-
-	LegoS32 left = p_rect->m_left;
-	result->m_left = left < 0 ? 0 : left;
-
-	if (p_rect->m_top < 0) {
-		result->m_top = 0;
+		p_result->m_left = 0;
+		p_result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
+		p_result->m_top = 0;
+		p_result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
 	}
 	else {
-		result->m_top = p_rect->m_top;
-	}
+		if (p_rect->m_right <= 0) {
+			return FALSE;
+		}
 
-	if (p_rect->m_right > p_renderer->GetRenderTargetInfo()->GetWidth()) {
-		result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
-	}
-	else {
-		result->m_right = p_rect->m_right;
-	}
+		if (p_rect->m_left >= p_renderer->GetRenderTargetInfo()->GetWidth()) {
+			return FALSE;
+		}
 
-	if (p_rect->m_bottom > p_renderer->GetRenderTargetInfo()->GetHeight()) {
-		result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
-	}
-	else {
-		result->m_bottom = p_rect->m_bottom;
+		if (p_rect->m_bottom <= 0) {
+			return FALSE;
+		}
+
+		if (p_rect->m_top >= p_renderer->GetRenderTargetInfo()->GetHeight()) {
+			return FALSE;
+		}
+
+		LegoS32 left = p_rect->m_left;
+		p_result->m_left = left < 0 ? 0 : left;
+
+		if (p_rect->m_top < 0) {
+			p_result->m_top = 0;
+		}
+		else {
+			p_result->m_top = p_rect->m_top;
+		}
+
+		if (p_rect->m_right > p_renderer->GetRenderTargetInfo()->GetWidth()) {
+			p_result->m_right = p_renderer->GetRenderTargetInfo()->GetWidth();
+		}
+		else {
+			p_result->m_right = p_rect->m_right;
+		}
+
+		if (p_rect->m_bottom > p_renderer->GetRenderTargetInfo()->GetHeight()) {
+			p_result->m_bottom = p_renderer->GetRenderTargetInfo()->GetHeight();
+		}
+		else {
+			p_result->m_bottom = p_rect->m_bottom;
+		}
 	}
 
 	return TRUE;
