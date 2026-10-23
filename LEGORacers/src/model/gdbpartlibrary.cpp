@@ -318,8 +318,7 @@ LegoS32 GdbPartLibrary::CopyBatchVertex(LegoU32 p_sourceVertex)
 	return g_copyBatchVertexCount++;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x00407d60
 void GdbPartLibrary::FlushCopyBatch()
 {
 	if (g_copyBatchIndexCount == 0) {
@@ -345,82 +344,3 @@ void GdbPartLibrary::FlushCopyBatch()
 	g_copyBatchVertexCount = 0;
 	g_copyBatchIndexCount = 0;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x00407d60
-__declspec(naked) void GdbPartLibrary::FlushCopyBatch()
-{
-	__asm {
-		mov eax, dword ptr [g_copyBatchIndexCount]
-		test eax, eax
-		je L_FlushCopyBatch_0
-		mov eax, dword ptr [g_copyGroupWrite]
-		mov ecx, dword ptr [g_copyBatchVertexStart]
-		mov edx, eax
-		inc eax
-		mov dword ptr [g_copyGroupWrite], eax
-		mov eax, dword ptr [g_copyModel]
-		push ebx
-		push esi
-		mov esi, dword ptr [eax + 0x24]
-		push edi
-		mov edi, dword ptr [g_copyBatchVertexCount]
-		and ecx, 0xffff
-		mov dword ptr [esi + edx*4], 0
-		mov esi, dword ptr [eax + 0x24]
-		add edi, 0xffff
-		mov ebx, dword ptr [esi + edx*4]
-		lea esi, [esi + edx*4]
-		shl edi, 0x10
-		and edi, 0x3f0000
-		or ebx, edi
-		mov dword ptr [esi], ebx
-		mov esi, dword ptr [eax + 0x24]
-		mov ebx, dword ptr [esi + edx*4]
-		lea edx, [esi + edx*4]
-		or ebx, ecx
-		mov dword ptr [edx], ebx
-		mov dword ptr [eax + 0x3c], 1
-		mov ecx, dword ptr [g_copyGroupWrite]
-		mov eax, dword ptr [g_copyBatchIndexCount]
-		mov esi, ecx
-		mov edx, dword ptr [g_copyIndexStart]
-		inc ecx
-		and eax, 0x7f
-		mov dword ptr [g_copyGroupWrite], ecx
-		mov ecx, dword ptr [g_copyModel]
-		shl eax, 0x10
-		mov edi, dword ptr [ecx + 0x24]
-		and edx, 0xffff
-		mov dword ptr [edi + esi*4], 0x20000000
-		mov edi, dword ptr [ecx + 0x24]
-		mov ebx, dword ptr [edi + esi*4]
-		lea edi, [edi + esi*4]
-		or ebx, eax
-		mov dword ptr [edi], ebx
-		mov eax, dword ptr [ecx + 0x24]
-		pop edi
-		lea eax, [eax + esi*4]
-		mov esi, dword ptr [eax]
-		or esi, edx
-		mov dword ptr [eax], esi
-		mov dword ptr [ecx + 0x3c], 1
-		mov ecx, dword ptr [g_copyBatchVertexCount]
-		mov edx, dword ptr [g_copyBatchVertexStart]
-		mov eax, dword ptr [g_copyIndexStart]
-		add edx, ecx
-		mov dword ptr [g_copyBatchVertexStart], edx
-		mov edx, dword ptr [g_copyBatchIndexCount]
-		add eax, edx
-		pop esi
-		mov dword ptr [g_copyIndexStart], eax
-		mov dword ptr [g_copyBatchVertexCount], 0
-		mov dword ptr [g_copyBatchIndexCount], 0
-		pop ebx
-	L_FlushCopyBatch_0:
-		ret
-	}
-}
-
-#endif

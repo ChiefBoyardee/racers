@@ -3,8 +3,6 @@
 #include "audio/soundgroupbinding.h"
 #include "input/inputdevice.h"
 
-extern "C" long _ftol();
-
 DECOMP_SIZE_ASSERT(OptionsRowBase, 0x6e4)
 DECOMP_SIZE_ASSERT(OptionsRow, 0x6ec)
 
@@ -285,8 +283,7 @@ void OptionsRow::SnapThumbToValue()
 	SetValue(index);
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0046e6f0
 void OptionsRow::SetValue(LegoS32 p_value)
 {
 	if (p_value != m_value) {
@@ -304,65 +301,6 @@ void OptionsRow::SetValue(LegoS32 p_value)
 		}
 	}
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0046e6f0
-__declspec(naked) void OptionsRow::SetValue(LegoS32 p_value)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		mov ebx, dword ptr [esp + 0x18]
-		push esi
-		mov esi, ecx
-		cmp ebx, dword ptr [esi + 0x6c0]
-		je L_SetValue_0
-		fld dword ptr [esi + 0x6cc]
-		fild dword ptr [esp + 0x1c]
-		lea eax, [esi + 0x620]
-		push edi
-		mov edx, eax
-		mov ecx, dword ptr [edx]
-		mov eax, dword ptr [edx + 4]
-		mov dword ptr [esp + 0x10], eax
-		mov eax, dword ptr [edx + 8]
-		mov edx, dword ptr [edx + 0xc]
-		sub eax, ecx
-		fmulp st(1), st(0)
-		mov dword ptr [esp + 0x18], edx
-		mov edi, eax
-		call _ftol
-		mov ecx, edi
-		mov edx, dword ptr [esi + 0x5ec]
-		sar ecx, 1
-		sub eax, ecx
-		mov ecx, dword ptr [esi + 0x6c4]
-		add eax, ecx
-		lea ecx, [esi + 0x5ec]
-		mov dword ptr [esp + 0xc], eax
-		add eax, edi
-		mov dword ptr [esp + 0x14], eax
-		lea eax, [esp + 0xc]
-		push eax
-		call dword ptr [edx + 0x10]
-		mov ecx, dword ptr [esi + 0x170]
-		mov dword ptr [esi + 0x6c0], ebx
-		test ecx, ecx
-		pop edi
-		je L_SetValue_0
-		mov edx, dword ptr [ecx]
-		push esi
-		call dword ptr [edx + 0x44]
-	L_SetValue_0:
-		pop esi
-		pop ebx
-		add esp, 0x10
-		ret 4
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0046e780
 undefined4 OptionsRow::MapCursorToNavigation(undefined4 p_event, undefined4 p_x, undefined4 p_y)

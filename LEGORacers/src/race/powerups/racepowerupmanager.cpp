@@ -1869,8 +1869,7 @@ PowerupAction* RacePowerupManager::ReclaimAction(
 	return best;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0045b3a0
 PowerupExplosion* __stdcall RacePowerupManager::ReclaimExplosion(PowerupExplosion** p_head)
 {
 	PowerupExplosion* selected = NULL;
@@ -1922,92 +1921,6 @@ PowerupExplosion* __stdcall RacePowerupManager::ReclaimExplosion(PowerupExplosio
 	selected->SetNext(NULL);
 	return selected;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0045b3a0
-__declspec(naked) PowerupExplosion* __stdcall RacePowerupManager::ReclaimExplosion(PowerupExplosion** p_head)
-{
-	__asm {
-		sub esp, 8
-		mov ecx, dword ptr [esp + 0xc]
-		push ebx
-		push ebp
-		push esi
-		mov ecx, dword ptr [ecx]
-		xor eax, eax
-		push edi
-		xor ebx, ebx
-		or edi, 0xffffffff
-		mov ebp, 3
-		mov dword ptr [esp + 0x10], eax
-		mov dword ptr [esp + 0x14], ecx
-	L_ReclaimExplosion_4:
-		xor esi, esi
-		test ecx, ecx
-		je L_ReclaimExplosion_0
-	L_ReclaimExplosion_2:
-		cmp ebp, dword ptr [ecx + 4]
-		jne L_ReclaimExplosion_1
-		mov edx, dword ptr [ecx + 0x238]
-		cmp edx, edi
-		jae L_ReclaimExplosion_1
-		mov edi, edx
-		mov eax, ecx
-		mov ebx, esi
-	L_ReclaimExplosion_1:
-		mov esi, ecx
-		mov ecx, dword ptr [ecx + 0x26c]
-		test ecx, ecx
-		jne L_ReclaimExplosion_2
-		test eax, eax
-		jne L_ReclaimExplosion_3
-		mov ecx, dword ptr [esp + 0x14]
-	L_ReclaimExplosion_0:
-		mov edx, dword ptr [esp + 0x10]
-		mov ebp, 2
-		inc edx
-		cmp edx, 3
-		mov dword ptr [esp + 0x10], edx
-		jb L_ReclaimExplosion_4
-		mov eax, ecx
-		mov ecx, dword ptr [esp + 0x1c]
-		pop edi
-		pop esi
-		mov edx, dword ptr [eax + 0x26c]
-		pop ebp
-		mov dword ptr [ecx], edx
-		mov dword ptr [eax + 0x26c], 0
-		pop ebx
-		add esp, 8
-		ret 4
-	L_ReclaimExplosion_3:
-		test ebx, ebx
-		jne L_ReclaimExplosion_5
-		mov ecx, dword ptr [esp + 0x1c]
-		mov edx, dword ptr [eax + 0x26c]
-		pop edi
-		pop esi
-		mov dword ptr [ecx], edx
-		mov dword ptr [eax + 0x26c], ebx
-		pop ebp
-		pop ebx
-		add esp, 8
-		ret 4
-	L_ReclaimExplosion_5:
-		mov edx, dword ptr [eax + 0x26c]
-		pop edi
-		pop esi
-		mov dword ptr [ebx + 0x26c], edx
-		pop ebp
-		mov dword ptr [eax + 0x26c], 0
-		pop ebx
-		add esp, 8
-		ret 4
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0045b470
 void RacePowerupManager::SpawnExplosion(const GolVec3* p_position, undefined4 p_leavesScar, Racer* p_racer)

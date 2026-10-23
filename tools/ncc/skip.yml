@@ -1,5 +1,4 @@
 LONG_PTR: 'Win32 SDK typedef shim for MSVC 6.0'
-_ftol(): 'MSVC runtime helper function'
 c_332RedLevels: 'Allow constant'
 c_332GreenLevels: 'Allow constant'
 c_332BlueLevels: 'Allow constant'
