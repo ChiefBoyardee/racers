@@ -1287,10 +1287,8 @@ void RaceHud::StartCountdown()
 // FUNCTION: LEGORACERS 0x00426370
 void RaceHud::ShowFinish()
 {
-	LegoS32 value = m_racer->m_standingsPosition;
-
+	m_finalPosition = m_racer->m_standingsPosition - 1;
 	m_bannerMs = -1;
-	m_finalPosition = value - 1;
 }
 
 // FUNCTION: LEGORACERS 0x00426390

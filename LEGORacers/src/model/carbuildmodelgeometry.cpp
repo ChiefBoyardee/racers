@@ -629,115 +629,95 @@ LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
 {
 	::memset(g_carBuildModelVertexUses, 0, sizeof(g_carBuildModelVertexUses));
 
-	LegoS32 primitiveIndex = 0;
-	LegoS32 previousMaterialIndex = -1;
 	LegoS32 accumulatedReferenceCount = 0;
 	m_batchVertexCount = 0;
-
 	LegoS32 vertexCount = 2;
-	LegoS32 materialRunEnd = primitiveIndex;
-	LegoS32 currentMaterialIndex = previousMaterialIndex;
-	LegoS32 lastPrimitiveIndex = m_buildPrimitiveCount - 1;
+	LegoS32 materialRunEnd = 0;
+	LegoS32 materialIndex = -1;
 
-	if (lastPrimitiveIndex <= 0) {
-		return lastPrimitiveIndex;
-	}
-
-	while (TRUE) {
+	for (LegoS32 primitiveIndex = 0; primitiveIndex < m_buildPrimitiveCount - 1; primitiveIndex++) {
 		LegoS32 batchVertexCount = m_batchVertexCount;
 		LegoS32 bestAddedVertexCount = 0x42;
 		LegoS32 bestPrimitiveIndex = 0;
+		LegoS32 i;
 
-		if (batchVertexCount) {
+		if (batchVertexCount != 0 && materialIndex == m_buildPrimitiveOrder[primitiveIndex]->m_materialIndex) {
 			BuildPrimitive** primitiveOrder = m_buildPrimitiveOrder;
-			if (previousMaterialIndex == primitiveOrder[primitiveIndex]->m_materialIndex) {
-				LegoS32 searchEnd;
-				if (p_buildFlags & 0x80) {
+			LegoS32 searchEnd;
+
+			if (p_buildFlags & 0x80) {
+				searchEnd = materialRunEnd;
+			}
+			else {
+				searchEnd = primitiveIndex + c_modelBatchVertexCapacity;
+				if (searchEnd > materialRunEnd) {
 					searchEnd = materialRunEnd;
 				}
-				else {
-					searchEnd = primitiveIndex + c_modelBatchVertexCapacity;
-					if (searchEnd > materialRunEnd) {
-						searchEnd = materialRunEnd;
+			}
+
+			for (LegoS32 candidate = primitiveIndex; candidate < searchEnd; candidate++) {
+				BuildPrimitive* primitive = primitiveOrder[candidate];
+				vertexCount = primitive->m_vertexCount;
+				LegoS32 addedVertexCount = vertexCount;
+
+				for (i = 0; i < vertexCount; i++) {
+					if (g_carBuildModelVertexUses[primitive->m_vertexIndices[i]].m_inBatch) {
+						addedVertexCount--;
 					}
 				}
 
-				for (LegoS32 candidate = primitiveIndex; candidate < searchEnd; candidate++) {
-					BuildPrimitive* primitive = primitiveOrder[candidate];
-					LegoS32 addedVertexCount = primitive->m_vertexCount;
-					vertexCount = addedVertexCount;
-
-					for (LegoS32 i = 0; i < vertexCount; i++) {
-						if (g_carBuildModelVertexUses[primitive->m_vertexIndices[i]].m_inBatch) {
-							addedVertexCount--;
-						}
-					}
-
-					if (addedVertexCount == 0) {
-						bestPrimitiveIndex = candidate;
-						bestAddedVertexCount = 0;
-						candidate = m_buildPrimitiveCount;
-					}
-					else if (addedVertexCount < bestAddedVertexCount) {
-						bestAddedVertexCount = addedVertexCount;
-						bestPrimitiveIndex = candidate;
-					}
+				if (addedVertexCount == 0) {
+					bestPrimitiveIndex = candidate;
+					bestAddedVertexCount = addedVertexCount;
+					candidate = m_buildPrimitiveCount;
+				}
+				else if (addedVertexCount < bestAddedVertexCount) {
+					bestAddedVertexCount = addedVertexCount;
+					bestPrimitiveIndex = candidate;
 				}
 			}
 		}
+		else if (materialIndex != m_buildPrimitiveOrder[primitiveIndex]->m_materialIndex) {
+			for (i = 0; i < m_batchVertexCount; i++) {
+				g_carBuildModelVertexUses[m_batchBuildVertexIndices[i]].m_inBatch = FALSE;
+			}
 
-		if (previousMaterialIndex != m_buildPrimitiveOrder[primitiveIndex]->m_materialIndex) {
-			if (batchVertexCount > 0) {
-				for (LegoS32 i = 0; i < m_batchVertexCount; i++) {
-					g_carBuildModelVertexUses[m_batchBuildVertexIndices[i]].m_inBatch = FALSE;
+			materialIndex = m_buildPrimitiveOrder[primitiveIndex]->m_materialIndex;
+
+			LegoS32 runEnd;
+			for (runEnd = primitiveIndex; runEnd < m_buildPrimitiveCount; runEnd++) {
+				if (materialIndex != m_buildPrimitiveOrder[runEnd]->m_materialIndex) {
+					break;
+				}
+
+				vertexCount = m_buildPrimitiveOrder[runEnd]->m_vertexCount;
+				for (i = 0; i < vertexCount; i++) {
+					g_carBuildModelVertexUses[m_buildPrimitiveOrder[runEnd]->m_vertexIndices[i]].m_referenceCount++;
 				}
 			}
 
-			currentMaterialIndex = m_buildPrimitiveOrder[primitiveIndex]->m_materialIndex;
-			materialRunEnd = primitiveIndex;
-			if (materialRunEnd < m_buildPrimitiveCount) {
-				while (TRUE) {
-					BuildPrimitive* primitive = m_buildPrimitiveOrder[materialRunEnd];
-					if (currentMaterialIndex != primitive->m_materialIndex) {
-						break;
-					}
-
-					vertexCount = primitive->m_vertexCount;
-					for (LegoS32 i = 0; i < vertexCount; i++) {
-						g_carBuildModelVertexUses[primitive->m_vertexIndices[i]].m_referenceCount++;
-					}
-
-					materialRunEnd++;
-					if (materialRunEnd >= m_buildPrimitiveCount) {
-						break;
-					}
-				}
-			}
+			materialRunEnd = runEnd;
 		}
 
-		if (static_cast<LegoU32>(bestAddedVertexCount + m_batchVertexCount) > c_modelBatchVertexCapacity) {
+		if (static_cast<LegoU32>(m_batchVertexCount + bestAddedVertexCount) > c_modelBatchVertexCapacity) {
 			bestPrimitiveIndex = 0;
 			LegoS32 bestReferenceCount = 0x7fffffff;
-			for (LegoS32 candidate = primitiveIndex; candidate < materialRunEnd; candidate++) {
-				BuildPrimitive* primitive = m_buildPrimitiveOrder[candidate];
 
-				if (vertexCount > 0) {
-					for (LegoS32 i = 0; i < vertexCount; i++) {
-						accumulatedReferenceCount +=
-							g_carBuildModelVertexUses[primitive->m_vertexIndices[i]].m_referenceCount;
-					}
+			for (LegoS32 candidate = primitiveIndex; candidate < materialRunEnd; candidate++) {
+				for (i = 0; i < vertexCount; i++) {
+					accumulatedReferenceCount +=
+						g_carBuildModelVertexUses[m_buildPrimitiveOrder[candidate]->m_vertexIndices[i]]
+							.m_referenceCount;
 				}
 
-				if (accumulatedReferenceCount < bestReferenceCount) {
+				if (bestReferenceCount > accumulatedReferenceCount) {
 					bestReferenceCount = accumulatedReferenceCount;
 					bestPrimitiveIndex = candidate;
 				}
 			}
 
-			if (m_batchVertexCount > 0) {
-				for (LegoS32 i = 0; i < m_batchVertexCount; i++) {
-					g_carBuildModelVertexUses[m_batchBuildVertexIndices[i]].m_inBatch = FALSE;
-				}
+			for (i = 0; i < m_batchVertexCount; i++) {
+				g_carBuildModelVertexUses[m_batchBuildVertexIndices[i]].m_inBatch = FALSE;
 			}
 			m_batchVertexCount = 0;
 		}
@@ -748,9 +728,8 @@ LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
 			m_buildPrimitiveOrder[bestPrimitiveIndex] = primitive;
 		}
 
-		BuildPrimitive* primitive = m_buildPrimitiveOrder[primitiveIndex];
-		for (LegoS32 i = 0; i < primitive->m_vertexCount; i++) {
-			LegoS32 vertexIndex = primitive->m_vertexIndices[i];
+		for (i = 0; i < m_buildPrimitiveOrder[primitiveIndex]->m_vertexCount; i++) {
+			LegoS32 vertexIndex = m_buildPrimitiveOrder[primitiveIndex]->m_vertexIndices[i];
 			g_carBuildModelVertexUses[vertexIndex].m_referenceCount--;
 			if (!g_carBuildModelVertexUses[vertexIndex].m_inBatch) {
 				g_carBuildModelVertexUses[vertexIndex].m_inBatch = TRUE;
@@ -758,13 +737,9 @@ LegoS32 CarBuildModel::BuildBatches(LegoS8 p_buildFlags)
 				m_batchVertexCount++;
 			}
 		}
-
-		primitiveIndex++;
-		if (primitiveIndex >= m_buildPrimitiveCount - 1) {
-			return m_buildPrimitiveCount - 1;
-		}
-		previousMaterialIndex = currentMaterialIndex;
 	}
+
+	return m_buildPrimitiveCount - 1;
 }
 
 // FUNCTION: LEGORACERS 0x00497690
