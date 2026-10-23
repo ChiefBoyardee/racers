@@ -69,17 +69,17 @@ __declspec(naked) LegoU32 GolDecompress(LegoU8* p_src, LegoU8* p_dst)
 		mov esi, dword ptr [esp + 0x10]
 		mov edi, dword ptr [esp + 0x14]
 		mov al, byte ptr [esi]
-		storeByte:
+	storeByte:
 		inc esi
 		mov byte ptr [edi], al
 		inc edi
-		newCtrl:
+	newCtrl:
 		mov bl, byte ptr [esi]
 		shl ebx, 0x18
 		inc esi
 		inc ebx
 		js backRef
-		bitLoop:
+	bitLoop:
 		add ebx, ebx
 		mov al, byte ptr [esi]
 		jp storeByte
@@ -87,7 +87,7 @@ __declspec(naked) LegoU32 GolDecompress(LegoU8* p_src, LegoU8* p_dst)
 		mov byte ptr [edi], al
 		lea edi, [edi + 1]
 		jns bitLoop
-		backRef:
+	backRef:
 		mov al, byte ptr [esi]
 		inc esi
 		mov edx, eax
@@ -100,14 +100,14 @@ __declspec(naked) LegoU32 GolDecompress(LegoU8* p_src, LegoU8* p_dst)
 		neg eax
 		sub eax, 0x12
 		jmp haveCount
-		shortBack:
+	shortBack:
 		mov dl, byte ptr [esi]
 		sub eax, 0x12
-		haveCount:
+	haveCount:
 		neg edx
 		lea esi, [esi + 1]
 		je doneDec
-		copyLoop:
+	copyLoop:
 		mov cl, byte ptr [edi + edx]
 		inc eax
 		mov byte ptr [edi], cl
@@ -117,7 +117,7 @@ __declspec(naked) LegoU32 GolDecompress(LegoU8* p_src, LegoU8* p_dst)
 		jp newCtrl
 		jns bitLoop
 		jmp backRef
-		doneDec:
+	doneDec:
 		mov ecx, dword ptr [esp + 0x14]
 		mov eax, edi
 		pop edi
