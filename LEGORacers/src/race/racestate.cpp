@@ -1138,76 +1138,53 @@ void RaceState::ComputeStandingsDeltas(Racer* p_racer, Racer::StandingsDeltaEntr
 	LegoU32 lapCount = m_setup.m_lapCount;
 	LegoS32 racerTime = 0;
 
-	if (lapCount > p_racer->m_lapsCompleted) {
-		if (m_roster.m_racerCount > 0) {
-			LegoU32 racerIndex = 0;
-			Racer::StandingsDeltaEntry* entry = p_entries;
-
-			do {
-				entry->m_racer = NULL;
-				entry->m_delta = 0;
-				entry->m_isValid = FALSE;
-				racerIndex++;
-				entry++;
-			} while (racerIndex < m_roster.m_racerCount);
+	if (p_racer->m_lapsCompleted < lapCount) {
+		for (LegoU32 racerIndex = 0; racerIndex < m_roster.m_racerCount; racerIndex++) {
+			p_entries[racerIndex].m_racer = NULL;
+			p_entries[racerIndex].m_delta = 0;
+			p_entries[racerIndex].m_isValid = FALSE;
 		}
 
 		return;
 	}
 
 	if (lapCount > 0) {
-		LegoU32 remaining = lapCount;
 		LegoU32* lapTime = p_racer->m_lapTimes;
 
 		do {
 			racerTime += *lapTime++;
-		} while (--remaining);
+		} while (--lapCount);
 	}
 
-	if (m_roster.m_racerCount > 0) {
-		LegoU32 racerIndex = 0;
-		Racer::StandingsDeltaEntry* entry = p_entries;
+	for (LegoU32 racerIndex = 0; racerIndex < m_roster.m_racerCount; racerIndex++) {
+		p_entries[racerIndex].m_racer = &m_roster.m_racers[racerIndex];
+		p_entries[racerIndex].m_isValid = TRUE;
 
-		do {
-			entry->m_racer = &m_roster.m_racers[racerIndex];
-			entry->m_isValid = TRUE;
+		Racer* otherRacer = &m_roster.m_racers[racerIndex];
+		if (otherRacer == p_racer) {
+			p_entries[racerIndex].m_delta = 0;
+		}
+		else if (otherRacer->m_lapsCompleted < m_setup.m_lapCount) {
+			p_entries[racerIndex].m_delta = otherRacer->m_standingsPosition + 2147483641;
+		}
+		else {
+			LegoS32 otherTime = 0;
+			LegoU32 remaining = m_setup.m_lapCount;
 
-			Racer* racers = m_roster.m_racers;
-			Racer* otherRacer = &racers[racerIndex];
-			if (otherRacer == p_racer) {
-				entry->m_delta = 0;
-			}
-			else if (otherRacer->m_lapsCompleted >= m_setup.m_lapCount) {
-				LegoS32 otherTime = 0;
-				LegoU32 remaining = m_setup.m_lapCount;
+			if (remaining > 0) {
+				LegoU32* lapTime = otherRacer->m_lapTimes;
 
-				if (remaining) {
-					LegoU32* lapTime = otherRacer->m_lapTimes;
-
-					do {
-						otherTime += *lapTime++;
-					} while (--remaining);
-				}
-
-				entry->m_delta = otherTime - racerTime;
-			}
-			else {
-				entry->m_delta = otherRacer->m_standingsPosition + 2147483641;
+				do {
+					otherTime += *lapTime++;
+				} while (--remaining);
 			}
 
-			racerIndex++;
-			entry++;
-		} while (racerIndex < m_roster.m_racerCount);
+			p_entries[racerIndex].m_delta = otherTime - racerTime;
+		}
 	}
 
-	if (m_roster.m_racerCount < 6) {
-		Racer::StandingsDeltaEntry* entry = &p_entries[m_roster.m_racerCount];
-		LegoU32 remaining = 6 - m_roster.m_racerCount;
-
-		do {
-			entry->m_isValid = FALSE;
-			entry++;
-		} while (--remaining);
+	for (LegoU32 i = m_roster.m_racerCount; i < 6; i++) {
+		p_entries[i].m_isValid = FALSE;
 	}
 }
 
