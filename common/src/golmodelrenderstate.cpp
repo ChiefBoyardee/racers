@@ -87,16 +87,15 @@ void GolModelRenderState::AddLight(const GolRenderDevice::Light* p_light)
 // FUNCTION: LEGORACERS 0x0040ec00
 void GolModelRenderState::UpdateMaterialCaches()
 {
-	GolMaterial* activeMaterial = m_activeMaterial;
-	LegoU32 zero = 0;
+	GolMaterial* material = m_activeMaterial;
 
-	if (activeMaterial == NULL) {
-		m_activeMaterialColor.m_red = zero;
-		m_activeMaterialColor.m_grn = zero;
-		m_activeMaterialColor.m_blu = zero;
+	if (material == NULL) {
+		m_activeMaterialColor.m_red = 0;
+		m_activeMaterialColor.m_grn = 0;
+		m_activeMaterialColor.m_blu = 0;
 		m_activeMaterialColor.m_alp = 0xff;
 
-		for (LegoU32 i = zero; i < m_lightCount; i++) {
+		for (LegoU32 i = 0; i < m_lightCount; i++) {
 			m_lightColorProducts[i].m_red = 0.0f;
 			m_lightColorProducts[i].m_grn = 0.0f;
 			m_lightColorProducts[i].m_blu = 0.0f;
@@ -105,34 +104,20 @@ void GolModelRenderState::UpdateMaterialCaches()
 		return;
 	}
 
-	GolMaterialColor ambient = activeMaterial->GetAmbient();
+	GolMaterialColor ambient = material->GetAmbient();
 	m_activeMaterialColor.m_red = (static_cast<LegoU32>(ambient.m_red & 0xff) * m_materialColorValue.m_red) >> 8;
 	m_activeMaterialColor.m_grn = (static_cast<LegoU32>(ambient.m_grn & 0xff) * m_materialColorValue.m_grn) >> 8;
 	m_activeMaterialColor.m_blu = (static_cast<LegoU32>(ambient.m_blu & 0xff) * m_materialColorValue.m_blu) >> 8;
 	m_activeMaterialColor.m_alp = ambient.m_alp;
 
-	GolMaterialColor diffuse = activeMaterial->GetDiffuse();
-	if (m_lightCount > zero) {
-		LegoU32 i = 0;
-		LegoU32 red = diffuse.m_red & 0xff;
-		LegoU32 grn = diffuse.m_grn & 0xff;
-		LegoU32 blu = diffuse.m_blu & 0xff;
-		FColorRGB* lightProduct = m_lightColorProducts;
-		ColorRGBA* lightColor = m_lightColors;
-
-		while (i < m_lightCount) {
-			LegoS32 product = static_cast<LegoS32>((red * lightColor->m_red) >> 8);
-			lightProduct->m_red = static_cast<LegoFloat>(product);
-
-			product = static_cast<LegoS32>((grn * lightColor->m_grn) >> 8);
-			lightProduct->m_grn = static_cast<LegoFloat>(product);
-
-			product = static_cast<LegoS32>((blu * lightColor->m_blu) >> 8);
-			lightProduct->m_blu = static_cast<LegoFloat>(product);
-			lightProduct++;
-			lightColor++;
-			i++;
-		}
+	GolMaterialColor diffuse = material->GetDiffuse();
+	for (LegoU32 i = 0; i < m_lightCount; i++) {
+		LegoS32 red = (static_cast<LegoU32>(diffuse.m_red & 0xff) * m_lightColors[i].m_red) >> 8;
+		m_lightColorProducts[i].m_red = static_cast<LegoFloat>(red);
+		LegoS32 grn = (static_cast<LegoU32>(diffuse.m_grn & 0xff) * m_lightColors[i].m_grn) >> 8;
+		m_lightColorProducts[i].m_grn = static_cast<LegoFloat>(grn);
+		LegoS32 blu = (static_cast<LegoU32>(diffuse.m_blu & 0xff) * m_lightColors[i].m_blu) >> 8;
+		m_lightColorProducts[i].m_blu = static_cast<LegoFloat>(blu);
 	}
 }
 
