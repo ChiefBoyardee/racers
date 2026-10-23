@@ -1371,13 +1371,17 @@ LegoBool32 RacerPhysics::CanPowerslide()
 		return FALSE;
 	}
 
-	GolOrientedEntity* entity = m_carEntity;
-	LegoFloat dot = entity->m_orientation.m_rows[0].m_x;
-	LegoFloat y = entity->m_orientation.m_rows[0].m_y;
-	LegoFloat z = m_velocityDirection.m_z * entity->m_orientation.m_rows[0].m_z;
-	z += y * m_velocityDirection.m_y;
-	dot *= m_velocityDirection.m_x;
-	dot += z;
+	GolVec2 orientation;
+	orientation.m_x = m_carEntity->GetOrientation().m_rows[0].m_x;
+	orientation.m_y = m_carEntity->GetOrientation().m_rows[0].m_y;
+	LegoFloat orientationY = orientation.m_y;
+	LegoFloat dot = m_velocityDirection.m_z;
+	dot *= m_carEntity->GetOrientation().m_rows[0].m_z;
+	LegoFloat y = m_velocityDirection.m_y;
+	y *= orientationY;
+	dot += y;
+	dot += orientation.m_x * m_velocityDirection.m_x;
+
 	if (dot <= g_powerslideAlignmentMin) {
 		return FALSE;
 	}
