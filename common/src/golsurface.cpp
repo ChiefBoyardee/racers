@@ -263,24 +263,24 @@ void GolSurface::Blit(LegoU32 p_x, LegoU32 p_y, GolSurface* p_source, Rect* p_so
 
 		LegoU32 destMask;
 		LegoU32 destShift;
-		if (p_x & 1) {
-			destMask = 0x0f;
-			destShift = 4;
-		}
-		else {
+		if (!(p_x & 1)) {
 			destMask = 0xf0;
 			destShift = 0;
+		}
+		else {
+			destMask = 0x0f;
+			destShift = 4;
 		}
 
 		LegoU32 sourceMask;
 		LegoU32 sourceShift;
-		if (p_sourceRect->m_left & 1) {
-			sourceMask = 0xf0;
-			sourceShift = 4;
-		}
-		else {
+		if (!(p_sourceRect->m_left & 1)) {
 			sourceMask = 0x0f;
 			sourceShift = 0;
+		}
+		else {
+			sourceMask = 0xf0;
+			sourceShift = 4;
 		}
 
 		if (copyHeight > 0) {
@@ -289,17 +289,15 @@ void GolSurface::Blit(LegoU32 p_x, LegoU32 p_y, GolSurface* p_source, Rect* p_so
 				LegoU32 rowDestMask = destMask;
 				LegoU32 rowSourceMask = sourceMask;
 				LegoU32 rowSourceShift = sourceShift;
-				LegoU32 x = 0;
 				LegoU32 rowDestShift = destShift;
-				while (x < copyWidth) {
-					LegoU8* dest = &destPixels[(x + p_x) >> 1];
-					LegoU32 color = (sourcePixels[(x + p_sourceRect->m_left) >> 1] & rowSourceMask) >> rowSourceShift;
-					color <<= rowDestShift;
+				for (LegoU32 x = 0; x < copyWidth; x++) {
+					LegoU8 color = (sourcePixels[(p_sourceRect->m_left + x) >> 1] & rowSourceMask) >> rowSourceShift;
+					LegoU32 shift = rowDestShift;
 					rowDestShift ^= 4;
+					color <<= shift;
 					rowSourceMask = ~rowSourceMask;
-					*dest = (*dest & rowDestMask) | (LegoU8) color;
+					destPixels[(x + p_x) >> 1] = (rowDestMask & destPixels[(x + p_x) >> 1]) | color;
 					rowDestMask = ~rowDestMask;
-					++x;
 					rowSourceShift ^= 4;
 				}
 				destPixels += destPitch;
