@@ -7,8 +7,6 @@
 
 #include <string.h>
 
-extern "C" long _ftol();
-
 DECOMP_SIZE_ASSERT(GolModelRenderState, 0x104)
 DECOMP_SIZE_ASSERT(GolD3DRenderState::CommandVertex, 0x20)
 DECOMP_SIZE_ASSERT(GolD3DRenderState::MaterialCommand, 0x1c)
@@ -244,8 +242,8 @@ void GolModelRenderState::LightVertices1(
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x100248e0
+// FUNCTION: LEGORACERS 0x0040ef10
 void GolModelRenderState::LightVertices2(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -338,158 +336,8 @@ void GolModelRenderState::LightVertices2(
 	}
 }
 
-#else
-
-// FUNCTION: GOLDP 0x100248e0
-// FUNCTION: LEGORACERS 0x0040ef10
-__declspec(naked) void GolModelRenderState::LightVertices2(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices2_0
-		jmp L_LightVertices2_1
-	L_LightVertices2_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices2_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices2_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices2_3
-	L_LightVertices2_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices2_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices2_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices2_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices2_5
-	L_LightVertices2_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices2_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices2_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices2_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices2_7
-	L_LightVertices2_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices2_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices2_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices2_8
-	L_LightVertices2_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x10024a70
+// FUNCTION: LEGORACERS 0x0040f0a0
 void GolModelRenderState::LightVertices3(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -529,9 +377,14 @@ void GolModelRenderState::LightVertices3(
 			bluProduct *= dot;
 			LegoS32 blu = bluBase - static_cast<LegoS32>(bluProduct);
 
-			dot = vertex->m_ny * m_lightDirections[1].m_y;
-			dot += vertex->m_nz * m_lightDirections[1].m_z;
-			dot += vertex->m_nx * m_lightDirections[1].m_x;
+			dot = m_lightDirections[1].m_y;
+			dot *= vertex->m_ny;
+			normalProduct = vertex->m_nz;
+			normalProduct *= m_lightDirections[1].m_z;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[1].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
 
 			redProduct = m_lightColorProducts[1].m_red;
 			redProduct *= dot;
@@ -545,8 +398,14 @@ void GolModelRenderState::LightVertices3(
 			bluProduct *= dot;
 			blu -= static_cast<LegoS32>(bluProduct);
 
-			dot = (m_lightDirections[2].m_z * vertex->m_nz + vertex->m_ny * m_lightDirections[2].m_y) +
-				  m_lightDirections[2].m_x * vertex->m_nx;
+			dot = m_lightDirections[2].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[2].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[2].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
 
 			redProduct = m_lightColorProducts[2].m_red;
 			redProduct *= dot;
@@ -596,183 +455,8 @@ void GolModelRenderState::LightVertices3(
 	}
 }
 
-#else
-
-// FUNCTION: GOLDP 0x10024a70
-// FUNCTION: LEGORACERS 0x0040f0a0
-__declspec(naked) void GolModelRenderState::LightVertices3(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices3_0
-		jmp L_LightVertices3_1
-	L_LightVertices3_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices3_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		fstp st(0)
-		fld dword ptr [esi + 0xcc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		fmul dword ptr [esi + 0xc8]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xc4]
-		fmul dword ptr [edi + 0x14]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x70]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x74]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x78]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices3_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices3_3
-	L_LightVertices3_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices3_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices3_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices3_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices3_5
-	L_LightVertices3_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices3_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices3_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices3_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices3_7
-	L_LightVertices3_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices3_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices3_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices3_8
-	L_LightVertices3_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x10024c50
+// FUNCTION: LEGORACERS 0x0040f280
 void GolModelRenderState::LightVertices4(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -781,39 +465,95 @@ void GolModelRenderState::LightVertices4(
 )
 {
 	ColorRGBA color;
-	color.m_alp = m_activeMaterialColor.m_alp;
-
 	LegoS32 redBase = m_activeMaterialColor.m_red;
 	LegoS32 grnBase = m_activeMaterialColor.m_grn;
 	LegoS32 bluBase = m_activeMaterialColor.m_blu;
+	color.m_alp = m_activeMaterialColor.m_alp;
+
 	const CommandVertex* vertex = p_vertices + p_outputFirst;
 	const CommandVertex* end = vertex + p_vertexCount;
 
 	if (vertex < end) {
 		do {
-			LegoFloat dot = vertex->m_ny * m_lightDirections[0].m_y +
-							(vertex->m_nz * m_lightDirections[0].m_z + vertex->m_nx * m_lightDirections[0].m_x);
-			LegoS32 red = redBase - static_cast<LegoS32>(m_lightColorProducts[0].m_red * dot);
-			LegoS32 grn = grnBase - static_cast<LegoS32>(m_lightColorProducts[0].m_grn * dot);
-			LegoS32 blu = bluBase - static_cast<LegoS32>(m_lightColorProducts[0].m_blu * dot);
+			LegoFloat dot = vertex->m_nx;
+			dot *= m_lightDirections[0].m_x;
+			LegoFloat normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[0].m_y;
+			dot += normalProduct;
+			normalProduct = vertex->m_nz;
+			normalProduct *= m_lightDirections[0].m_z;
+			dot += normalProduct;
 
-			dot = vertex->m_ny * m_lightDirections[1].m_y +
-				  (vertex->m_nz * m_lightDirections[1].m_z + vertex->m_nx * m_lightDirections[1].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[1].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[1].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[1].m_blu * dot);
+			LegoFloat redProduct = m_lightColorProducts[0].m_red;
+			redProduct *= dot;
+			LegoS32 red = redBase - static_cast<LegoS32>(redProduct);
 
-			dot = vertex->m_ny * m_lightDirections[2].m_y +
-				  (vertex->m_nz * m_lightDirections[2].m_z + vertex->m_nx * m_lightDirections[2].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[2].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[2].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[2].m_blu * dot);
+			LegoFloat grnProduct = m_lightColorProducts[0].m_grn;
+			grnProduct *= dot;
+			LegoS32 grn = grnBase - static_cast<LegoS32>(grnProduct);
 
-			dot = vertex->m_ny * m_lightDirections[3].m_y +
-				  (vertex->m_nz * m_lightDirections[3].m_z + vertex->m_nx * m_lightDirections[3].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[3].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[3].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[3].m_blu * dot);
+			LegoFloat bluProduct = m_lightColorProducts[0].m_blu;
+			bluProduct *= dot;
+			LegoS32 blu = bluBase - static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[1].m_y;
+			dot *= vertex->m_ny;
+			dot += vertex->m_nz * m_lightDirections[1].m_z;
+			dot += vertex->m_nx * m_lightDirections[1].m_x;
+
+			redProduct = m_lightColorProducts[1].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[1].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[1].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[2].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[2].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[2].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[2].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[2].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[2].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[3].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_nx;
+			normalProduct *= m_lightDirections[3].m_x;
+			dot += normalProduct;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[3].m_y;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[3].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[3].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[3].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
 
 			if (red < redBase) {
 				color.m_red = static_cast<LegoU8>(redBase);
@@ -851,208 +591,8 @@ void GolModelRenderState::LightVertices4(
 	}
 }
 
-#else
-
-// FUNCTION: GOLDP 0x10024c50
-// FUNCTION: LEGORACERS 0x0040f280
-__declspec(naked) void GolModelRenderState::LightVertices4(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices4_0
-		jmp L_LightVertices4_1
-	L_LightVertices4_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices4_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov edx, dword ptr [esp + 0x24]
-		fstp st(0)
-		fld dword ptr [esi + 0xcc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		sub edx, eax
-		mov dword ptr [esp + 0x24], edx
-		fmul dword ptr [esi + 0xc8]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xc4]
-		fmul dword ptr [edi + 0x14]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x70]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x74]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x78]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xd8]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xd0]
-		mov ecx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xd4]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x7c]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x80]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x84]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices4_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices4_3
-	L_LightVertices4_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices4_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices4_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices4_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices4_5
-	L_LightVertices4_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices4_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices4_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices4_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices4_7
-	L_LightVertices4_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices4_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices4_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices4_8
-	L_LightVertices4_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x10024e90
+// FUNCTION: LEGORACERS 0x0040f4c0
 void GolModelRenderState::LightVertices5(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -1061,45 +601,114 @@ void GolModelRenderState::LightVertices5(
 )
 {
 	ColorRGBA color;
-	color.m_alp = m_activeMaterialColor.m_alp;
-
 	LegoS32 redBase = m_activeMaterialColor.m_red;
 	LegoS32 grnBase = m_activeMaterialColor.m_grn;
 	LegoS32 bluBase = m_activeMaterialColor.m_blu;
+	color.m_alp = m_activeMaterialColor.m_alp;
+
 	const CommandVertex* vertex = p_vertices + p_outputFirst;
 	const CommandVertex* end = vertex + p_vertexCount;
 
 	if (vertex < end) {
 		do {
-			LegoFloat dot = vertex->m_ny * m_lightDirections[0].m_y +
-							(vertex->m_nz * m_lightDirections[0].m_z + vertex->m_nx * m_lightDirections[0].m_x);
-			LegoS32 red = redBase - static_cast<LegoS32>(m_lightColorProducts[0].m_red * dot);
-			LegoS32 grn = grnBase - static_cast<LegoS32>(m_lightColorProducts[0].m_grn * dot);
-			LegoS32 blu = bluBase - static_cast<LegoS32>(m_lightColorProducts[0].m_blu * dot);
+			LegoFloat dot = vertex->m_nx;
+			dot *= m_lightDirections[0].m_x;
+			LegoFloat normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[0].m_y;
+			dot += normalProduct;
+			normalProduct = vertex->m_nz;
+			normalProduct *= m_lightDirections[0].m_z;
+			dot += normalProduct;
 
-			dot = vertex->m_ny * m_lightDirections[1].m_y +
-				  (vertex->m_nz * m_lightDirections[1].m_z + vertex->m_nx * m_lightDirections[1].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[1].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[1].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[1].m_blu * dot);
+			LegoFloat redProduct = m_lightColorProducts[0].m_red;
+			redProduct *= dot;
+			LegoS32 red = redBase - static_cast<LegoS32>(redProduct);
 
-			dot = vertex->m_ny * m_lightDirections[2].m_y +
-				  (vertex->m_nz * m_lightDirections[2].m_z + vertex->m_nx * m_lightDirections[2].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[2].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[2].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[2].m_blu * dot);
+			LegoFloat grnProduct = m_lightColorProducts[0].m_grn;
+			grnProduct *= dot;
+			LegoS32 grn = grnBase - static_cast<LegoS32>(grnProduct);
 
-			dot = vertex->m_ny * m_lightDirections[3].m_y +
-				  (vertex->m_nz * m_lightDirections[3].m_z + vertex->m_nx * m_lightDirections[3].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[3].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[3].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[3].m_blu * dot);
+			LegoFloat bluProduct = m_lightColorProducts[0].m_blu;
+			bluProduct *= dot;
+			LegoS32 blu = bluBase - static_cast<LegoS32>(bluProduct);
 
-			dot = vertex->m_ny * m_lightDirections[4].m_y +
-				  (vertex->m_nz * m_lightDirections[4].m_z + vertex->m_nx * m_lightDirections[4].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[4].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[4].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[4].m_blu * dot);
+			dot = m_lightDirections[1].m_y;
+			dot *= vertex->m_ny;
+			dot += vertex->m_nz * m_lightDirections[1].m_z;
+			dot += vertex->m_nx * m_lightDirections[1].m_x;
+
+			redProduct = m_lightColorProducts[1].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[1].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[1].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[2].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[2].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[2].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[2].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[2].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[2].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[3].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_nx;
+			normalProduct *= m_lightDirections[3].m_x;
+			dot += normalProduct;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[3].m_y;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[3].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[3].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[3].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[4].m_x;
+			dot *= vertex->m_nx;
+			dot += vertex->m_ny * m_lightDirections[4].m_y;
+			normalProduct = m_lightDirections[4].m_z;
+			normalProduct *= vertex->m_nz;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[4].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[4].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[4].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
 
 			if (red < redBase) {
 				color.m_red = static_cast<LegoU8>(redBase);
@@ -1137,233 +746,8 @@ void GolModelRenderState::LightVertices5(
 	}
 }
 
-#else
-
-// FUNCTION: GOLDP 0x10024e90
-// FUNCTION: LEGORACERS 0x0040f4c0
-__declspec(naked) void GolModelRenderState::LightVertices5(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices5_0
-		jmp L_LightVertices5_1
-	L_LightVertices5_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices5_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		fstp st(0)
-		fld dword ptr [esi + 0xcc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		fmul dword ptr [esi + 0xc8]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xc4]
-		fmul dword ptr [edi + 0x14]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x70]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x74]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x78]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xd8]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xd0]
-		mov edx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xd4]
-		sub edx, eax
-		mov dword ptr [esp + 0x24], edx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x7c]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x80]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x84]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xdc]
-		fmul dword ptr [edi + 0x14]
-		fld dword ptr [esi + 0xe0]
-		mov ecx, dword ptr [esp + 0x24]
-		fmul dword ptr [edi + 0x18]
-		sub ecx, eax
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xe4]
-		mov dword ptr [esp + 0x24], ecx
-		fmul dword ptr [edi + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x88]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x8c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x90]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices5_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices5_3
-	L_LightVertices5_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices5_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices5_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices5_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices5_5
-	L_LightVertices5_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices5_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices5_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices5_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices5_7
-	L_LightVertices5_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices5_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices5_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices5_8
-	L_LightVertices5_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x10025130
+// FUNCTION: LEGORACERS 0x0040f760
 void GolModelRenderState::LightVertices6(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -1372,51 +756,129 @@ void GolModelRenderState::LightVertices6(
 )
 {
 	ColorRGBA color;
-	color.m_alp = m_activeMaterialColor.m_alp;
-
 	LegoS32 redBase = m_activeMaterialColor.m_red;
 	LegoS32 grnBase = m_activeMaterialColor.m_grn;
 	LegoS32 bluBase = m_activeMaterialColor.m_blu;
+	color.m_alp = m_activeMaterialColor.m_alp;
+
 	const CommandVertex* vertex = p_vertices + p_outputFirst;
 	const CommandVertex* end = vertex + p_vertexCount;
 
 	if (vertex < end) {
 		do {
-			LegoFloat dot = vertex->m_ny * m_lightDirections[0].m_y +
-							(vertex->m_nz * m_lightDirections[0].m_z + vertex->m_nx * m_lightDirections[0].m_x);
-			LegoS32 red = redBase - static_cast<LegoS32>(m_lightColorProducts[0].m_red * dot);
-			LegoS32 grn = grnBase - static_cast<LegoS32>(m_lightColorProducts[0].m_grn * dot);
-			LegoS32 blu = bluBase - static_cast<LegoS32>(m_lightColorProducts[0].m_blu * dot);
+			LegoFloat dot = vertex->m_nx;
+			dot *= m_lightDirections[0].m_x;
+			LegoFloat normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[0].m_y;
+			dot += normalProduct;
+			normalProduct = vertex->m_nz;
+			normalProduct *= m_lightDirections[0].m_z;
+			dot += normalProduct;
 
-			dot = vertex->m_ny * m_lightDirections[1].m_y +
-				  (vertex->m_nz * m_lightDirections[1].m_z + vertex->m_nx * m_lightDirections[1].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[1].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[1].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[1].m_blu * dot);
+			LegoFloat redProduct = m_lightColorProducts[0].m_red;
+			redProduct *= dot;
+			LegoS32 red = redBase - static_cast<LegoS32>(redProduct);
 
-			dot = vertex->m_ny * m_lightDirections[2].m_y +
-				  (vertex->m_nz * m_lightDirections[2].m_z + vertex->m_nx * m_lightDirections[2].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[2].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[2].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[2].m_blu * dot);
+			LegoFloat grnProduct = m_lightColorProducts[0].m_grn;
+			grnProduct *= dot;
+			LegoS32 grn = grnBase - static_cast<LegoS32>(grnProduct);
 
-			dot = vertex->m_ny * m_lightDirections[3].m_y +
-				  (vertex->m_nz * m_lightDirections[3].m_z + vertex->m_nx * m_lightDirections[3].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[3].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[3].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[3].m_blu * dot);
+			LegoFloat bluProduct = m_lightColorProducts[0].m_blu;
+			bluProduct *= dot;
+			LegoS32 blu = bluBase - static_cast<LegoS32>(bluProduct);
 
-			dot = vertex->m_ny * m_lightDirections[4].m_y +
-				  (vertex->m_nz * m_lightDirections[4].m_z + vertex->m_nx * m_lightDirections[4].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[4].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[4].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[4].m_blu * dot);
+			dot = m_lightDirections[1].m_y;
+			dot *= vertex->m_ny;
+			dot += vertex->m_nz * m_lightDirections[1].m_z;
+			dot += vertex->m_nx * m_lightDirections[1].m_x;
 
-			dot = vertex->m_ny * m_lightDirections[5].m_y +
-				  (vertex->m_nz * m_lightDirections[5].m_z + vertex->m_nx * m_lightDirections[5].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[5].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[5].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[5].m_blu * dot);
+			redProduct = m_lightColorProducts[1].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[1].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[1].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[2].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[2].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[2].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[2].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[2].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[2].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[3].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_nx;
+			normalProduct *= m_lightDirections[3].m_x;
+			dot += normalProduct;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[3].m_y;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[3].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[3].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[3].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = vertex->m_nx * m_lightDirections[4].m_x;
+			dot += vertex->m_ny * m_lightDirections[4].m_y;
+			normalProduct = m_lightDirections[4].m_z;
+			normalProduct *= vertex->m_nz;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[4].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[4].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[4].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = vertex->m_ny * m_lightDirections[5].m_y;
+			dot += vertex->m_nz * m_lightDirections[5].m_z;
+			dot += vertex->m_nx * m_lightDirections[5].m_x;
+
+			redProduct = m_lightColorProducts[5].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[5].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[5].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
 
 			if (red < redBase) {
 				color.m_red = static_cast<LegoU8>(redBase);
@@ -1454,258 +916,8 @@ void GolModelRenderState::LightVertices6(
 	}
 }
 
-#else
-
-// FUNCTION: GOLDP 0x10025130
-// FUNCTION: LEGORACERS 0x0040f760
-__declspec(naked) void GolModelRenderState::LightVertices6(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices6_0
-		jmp L_LightVertices6_1
-	L_LightVertices6_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices6_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov edx, dword ptr [esp + 0x24]
-		fstp st(0)
-		fld dword ptr [esi + 0xcc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		sub edx, eax
-		mov dword ptr [esp + 0x24], edx
-		fmul dword ptr [esi + 0xc8]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xc4]
-		fmul dword ptr [edi + 0x14]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x70]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x74]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x78]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xd8]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xd0]
-		mov ecx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xd4]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x7c]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x80]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x84]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xdc]
-		fmul dword ptr [edi + 0x14]
-		fld dword ptr [esi + 0xe0]
-		mov edx, dword ptr [esp + 0x24]
-		fmul dword ptr [edi + 0x18]
-		sub edx, eax
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xe4]
-		mov dword ptr [esp + 0x24], edx
-		fmul dword ptr [edi + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x88]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x8c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x90]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xec]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xf0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xe8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x94]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x98]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x9c]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices6_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices6_3
-	L_LightVertices6_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices6_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices6_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices6_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices6_5
-	L_LightVertices6_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices6_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices6_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices6_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices6_7
-	L_LightVertices6_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices6_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices6_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices6_8
-	L_LightVertices6_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
-
-#ifdef COMPAT_MODE
-
+// FUNCTION: GOLDP 0x10025420
+// FUNCTION: LEGORACERS 0x0040fa50
 void GolModelRenderState::LightVertices7(
 	const CommandVertex* p_vertices,
 	LegoU32 p_outputFirst,
@@ -1714,57 +926,156 @@ void GolModelRenderState::LightVertices7(
 )
 {
 	ColorRGBA color;
-	color.m_alp = m_activeMaterialColor.m_alp;
-
 	LegoS32 redBase = m_activeMaterialColor.m_red;
 	LegoS32 grnBase = m_activeMaterialColor.m_grn;
 	LegoS32 bluBase = m_activeMaterialColor.m_blu;
+	color.m_alp = m_activeMaterialColor.m_alp;
+
 	const CommandVertex* vertex = p_vertices + p_outputFirst;
 	const CommandVertex* end = vertex + p_vertexCount;
 
 	if (vertex < end) {
 		do {
-			LegoFloat dot = vertex->m_ny * m_lightDirections[0].m_y +
-							(vertex->m_nz * m_lightDirections[0].m_z + vertex->m_nx * m_lightDirections[0].m_x);
-			LegoS32 red = redBase - static_cast<LegoS32>(m_lightColorProducts[0].m_red * dot);
-			LegoS32 grn = grnBase - static_cast<LegoS32>(m_lightColorProducts[0].m_grn * dot);
-			LegoS32 blu = bluBase - static_cast<LegoS32>(m_lightColorProducts[0].m_blu * dot);
+			LegoFloat dot = vertex->m_nx;
+			dot *= m_lightDirections[0].m_x;
+			LegoFloat normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[0].m_y;
+			dot += normalProduct;
+			normalProduct = vertex->m_nz;
+			normalProduct *= m_lightDirections[0].m_z;
+			dot += normalProduct;
 
-			dot = vertex->m_ny * m_lightDirections[1].m_y +
-				  (vertex->m_nz * m_lightDirections[1].m_z + vertex->m_nx * m_lightDirections[1].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[1].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[1].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[1].m_blu * dot);
+			LegoFloat redProduct = m_lightColorProducts[0].m_red;
+			redProduct *= dot;
+			LegoS32 red = redBase - static_cast<LegoS32>(redProduct);
 
-			dot = vertex->m_ny * m_lightDirections[2].m_y +
-				  (vertex->m_nz * m_lightDirections[2].m_z + vertex->m_nx * m_lightDirections[2].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[2].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[2].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[2].m_blu * dot);
+			LegoFloat grnProduct = m_lightColorProducts[0].m_grn;
+			grnProduct *= dot;
+			LegoS32 grn = grnBase - static_cast<LegoS32>(grnProduct);
 
-			dot = vertex->m_ny * m_lightDirections[3].m_y +
-				  (vertex->m_nz * m_lightDirections[3].m_z + vertex->m_nx * m_lightDirections[3].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[3].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[3].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[3].m_blu * dot);
+			LegoFloat bluProduct = m_lightColorProducts[0].m_blu;
+			bluProduct *= dot;
+			LegoS32 blu = bluBase - static_cast<LegoS32>(bluProduct);
 
-			dot = vertex->m_ny * m_lightDirections[4].m_y +
-				  (vertex->m_nz * m_lightDirections[4].m_z + vertex->m_nx * m_lightDirections[4].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[4].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[4].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[4].m_blu * dot);
+			dot = m_lightDirections[1].m_y;
+			dot *= vertex->m_ny;
+			dot += vertex->m_nz * m_lightDirections[1].m_z;
+			dot += vertex->m_nx * m_lightDirections[1].m_x;
 
-			dot = vertex->m_ny * m_lightDirections[5].m_y +
-				  (vertex->m_nz * m_lightDirections[5].m_z + vertex->m_nx * m_lightDirections[5].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[5].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[5].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[5].m_blu * dot);
+			redProduct = m_lightColorProducts[1].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
 
-			dot = vertex->m_ny * m_lightDirections[6].m_y +
-				  (vertex->m_nz * m_lightDirections[6].m_z + vertex->m_nx * m_lightDirections[6].m_x);
-			red -= static_cast<LegoS32>(m_lightColorProducts[6].m_red * dot);
-			grn -= static_cast<LegoS32>(m_lightColorProducts[6].m_grn * dot);
-			blu -= static_cast<LegoS32>(m_lightColorProducts[6].m_blu * dot);
+			grnProduct = m_lightColorProducts[1].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[1].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[2].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[2].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[2].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[2].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[2].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[2].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[3].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_nx;
+			normalProduct *= m_lightDirections[3].m_x;
+			dot += normalProduct;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[3].m_y;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[3].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[3].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[3].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[4].m_x;
+			dot *= vertex->m_nx;
+			dot += vertex->m_ny * m_lightDirections[4].m_y;
+			normalProduct = m_lightDirections[4].m_z;
+			normalProduct *= vertex->m_nz;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[4].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[4].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[4].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[5].m_y;
+			dot *= vertex->m_ny;
+			normalProduct = m_lightDirections[5].m_z;
+			normalProduct *= vertex->m_nz;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[5].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[5].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[5].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[5].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
+
+			dot = m_lightDirections[6].m_z;
+			dot *= vertex->m_nz;
+			normalProduct = vertex->m_ny;
+			normalProduct *= m_lightDirections[6].m_y;
+			dot += normalProduct;
+			normalProduct = m_lightDirections[6].m_x;
+			normalProduct *= vertex->m_nx;
+			dot += normalProduct;
+
+			redProduct = m_lightColorProducts[6].m_red;
+			redProduct *= dot;
+			red -= static_cast<LegoS32>(redProduct);
+
+			grnProduct = m_lightColorProducts[6].m_grn;
+			grnProduct *= dot;
+			grn -= static_cast<LegoS32>(grnProduct);
+
+			bluProduct = m_lightColorProducts[6].m_blu;
+			bluProduct *= dot;
+			blu -= static_cast<LegoS32>(bluProduct);
 
 			if (red < redBase) {
 				color.m_red = static_cast<LegoU8>(redBase);
@@ -1801,278 +1112,3 @@ void GolModelRenderState::LightVertices7(
 		} while (vertex < end);
 	}
 }
-
-#else
-
-// FUNCTION: GOLDP 0x10025420
-// FUNCTION: LEGORACERS 0x0040fa50
-__declspec(naked) void GolModelRenderState::LightVertices7(
-	const CommandVertex* p_vertices,
-	LegoU32 p_outputFirst,
-	LegoU32 p_firstVertex,
-	LegoU32 p_vertexCount
-)
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push ebp
-		mov ebp, dword ptr [esp + 0x1c]
-		push esi
-		push edi
-		mov edi, dword ptr [esp + 0x28]
-		mov esi, ecx
-		xor eax, eax
-		shl edi, 5
-		mov al, byte ptr [esi + 0x31]
-		add edi, ebp
-		mov ebp, dword ptr [esp + 0x30]
-		mov dword ptr [esp + 0x18], eax
-		xor eax, eax
-		xor ebx, ebx
-		mov al, byte ptr [esi + 0x32]
-		mov bl, byte ptr [esi + 0x30]
-		shl ebp, 5
-		mov dword ptr [esp + 0x1c], eax
-		mov al, byte ptr [esi + 0x33]
-		add ebp, edi
-		mov dword ptr [esp + 0x14], ebx
-		cmp edi, ebp
-		mov byte ptr [esp + 0x13], al
-		jae L_LightVertices7_0
-		jmp L_LightVertices7_1
-	L_LightVertices7_8:
-		mov ebx, dword ptr [esp + 0x14]
-	L_LightVertices7_1:
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xac]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xb0]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x1c]
-		fmul dword ptr [esi + 0xb4]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x58]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x5c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x60]
-		mov ecx, dword ptr [esp + 0x18]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xbc]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xc0]
-		fmul dword ptr [edi + 0x1c]
-		mov ecx, dword ptr [esp + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xb8]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x64]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x68]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x6c]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		fstp st(0)
-		fld dword ptr [esi + 0xcc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		fmul dword ptr [esi + 0xc8]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xc4]
-		fmul dword ptr [edi + 0x14]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x70]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x74]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x78]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xd8]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x14]
-		fmul dword ptr [esi + 0xd0]
-		mov edx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xd4]
-		sub edx, eax
-		mov dword ptr [esp + 0x24], edx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x7c]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x80]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x84]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xdc]
-		fmul dword ptr [edi + 0x14]
-		fld dword ptr [esi + 0xe0]
-		mov ecx, dword ptr [esp + 0x24]
-		fmul dword ptr [edi + 0x18]
-		sub ecx, eax
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xe4]
-		mov dword ptr [esp + 0x24], ecx
-		fmul dword ptr [edi + 0x1c]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x88]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x8c]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x90]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xec]
-		fmul dword ptr [edi + 0x18]
-		fld dword ptr [esi + 0xf0]
-		fmul dword ptr [edi + 0x1c]
-		mov edx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xe8]
-		fmul dword ptr [edi + 0x14]
-		sub edx, eax
-		mov dword ptr [esp + 0x24], edx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0x94]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0x98]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0x9c]
-		mov edx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub edx, eax
-		mov dword ptr [esp + 0x28], edx
-		call _ftol
-		fstp st(0)
-		fld dword ptr [esi + 0xfc]
-		fmul dword ptr [edi + 0x1c]
-		fld dword ptr [edi + 0x18]
-		fmul dword ptr [esi + 0xf8]
-		mov ecx, dword ptr [esp + 0x24]
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xf4]
-		fmul dword ptr [edi + 0x14]
-		sub ecx, eax
-		mov dword ptr [esp + 0x24], ecx
-		faddp st(1), st(0)
-		fld dword ptr [esi + 0xa0]
-		fmul st(0), st(1)
-		call _ftol
-		fld dword ptr [esi + 0xa4]
-		fmul st(0), st(1)
-		sub ebx, eax
-		call _ftol
-		fld dword ptr [esi + 0xa8]
-		mov ecx, dword ptr [esp + 0x28]
-		fmul st(0), st(1)
-		sub ecx, eax
-		mov dword ptr [esp + 0x28], ecx
-		call _ftol
-		mov ecx, dword ptr [esp + 0x24]
-		sub ecx, eax
-		mov eax, dword ptr [esp + 0x14]
-		cmp ebx, eax
-		fstp st(0)
-		jge L_LightVertices7_2
-		mov byte ptr [esp + 0x10], al
-		jmp L_LightVertices7_3
-	L_LightVertices7_2:
-		cmp ebx, 0xff
-		mov byte ptr [esp + 0x10], 0xff
-		jg L_LightVertices7_3
-		mov byte ptr [esp + 0x10], bl
-	L_LightVertices7_3:
-		mov eax, dword ptr [esp + 0x28]
-		mov edx, dword ptr [esp + 0x18]
-		cmp eax, edx
-		jge L_LightVertices7_4
-		mov byte ptr [esp + 0x11], dl
-		jmp L_LightVertices7_5
-	L_LightVertices7_4:
-		cmp eax, 0xff
-		mov byte ptr [esp + 0x11], 0xff
-		jg L_LightVertices7_5
-		mov byte ptr [esp + 0x11], al
-	L_LightVertices7_5:
-		mov eax, dword ptr [esp + 0x1c]
-		cmp ecx, eax
-		jge L_LightVertices7_6
-		mov byte ptr [esp + 0x12], al
-		jmp L_LightVertices7_7
-	L_LightVertices7_6:
-		cmp ecx, 0xff
-		mov byte ptr [esp + 0x12], 0xff
-		jg L_LightVertices7_7
-		mov byte ptr [esp + 0x12], cl
-	L_LightVertices7_7:
-		mov ecx, dword ptr [esp + 0x2c]
-		lea ebx, [esp + 0x10]
-		mov eax, ecx
-		inc ecx
-		mov dword ptr [esp + 0x2c], ecx
-		mov ecx, dword ptr [esi + 0x38]
-		push ebx
-		push eax
-		mov edx, dword ptr [ecx]
-		call dword ptr [edx + 0x30]
-		add edi, 0x20
-		cmp edi, ebp
-		jb L_LightVertices7_8
-	L_LightVertices7_0:
-		pop edi
-		pop esi
-		pop ebp
-		pop ebx
-		add esp, 0x10
-		ret 0x10
-	}
-}
-
-#endif
