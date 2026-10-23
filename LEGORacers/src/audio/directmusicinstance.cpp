@@ -474,8 +474,7 @@ LegoBool32 DirectMusicInstance::IsPlaying()
 	return m_playing;
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0041a060
 LegoBool32 DirectMusicInstance::SetPath(const LegoChar* p_path)
 {
 	if (!m_directSoundBuffer) {
@@ -492,55 +491,6 @@ LegoBool32 DirectMusicInstance::SetPath(const LegoChar* p_path)
 	attributes = ~attributes;
 	return ((attributes & 0xff) >> 4) & 1;
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0041a060
-__declspec(naked) LegoBool32 DirectMusicInstance::SetPath(const LegoChar* p_path)
-{
-	__asm {
-		push esi
-		mov esi, ecx
-		mov eax, dword ptr [esi + 0x20]
-		test eax, eax
-		jne L_SetPath_0
-		xor eax, eax
-		pop esi
-		ret 4
-	L_SetPath_0:
-		mov eax, dword ptr [esi + 0x3c]
-		push edi
-		push -1
-		push eax
-		call dword ptr [WaitForSingleObject]
-		mov ecx, dword ptr [esp + 0xc]
-		lea edi, [esi + 0x4c]
-		push 0x104
-		push ecx
-		push edi
-		mov dword ptr [esi + 0x40], 0
-		mov dword ptr [esi + 0x150], 0
-		call dword ptr [strncpy]
-		add esp, 0xc
-		mov byte ptr [esi + 0x14f], 0
-		push edi
-		call dword ptr [GetFileAttributesA]
-		mov edx, dword ptr [esi + 0x3c]
-		mov edi, eax
-		push edx
-		call dword ptr [ReleaseMutex]
-		mov eax, edi
-		pop edi
-		not al
-		and eax, 0xff
-		pop esi
-		shr eax, 4
-		and eax, 1
-		ret 4
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x004513d0 FOLDED
 void DirectMusicInstance::VTable0x1c(undefined4)

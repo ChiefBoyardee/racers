@@ -82,20 +82,18 @@ void GolModelRenderState::AddLight(const GolRenderDevice::Light* p_light)
 	}
 }
 
-#ifdef COMPAT_MODE
-
+// FUNCTION: LEGORACERS 0x0040ec00
 void GolModelRenderState::UpdateMaterialCaches()
 {
-	GolMaterial* activeMaterial = m_activeMaterial;
-	LegoU32 zero = 0;
+	GolMaterial* material = m_activeMaterial;
 
-	if (activeMaterial == NULL) {
-		m_activeMaterialColor.m_red = zero;
-		m_activeMaterialColor.m_grn = zero;
-		m_activeMaterialColor.m_blu = zero;
+	if (material == NULL) {
+		m_activeMaterialColor.m_red = 0;
+		m_activeMaterialColor.m_grn = 0;
+		m_activeMaterialColor.m_blu = 0;
 		m_activeMaterialColor.m_alp = 0xff;
 
-		for (LegoU32 i = zero; i < m_lightCount; i++) {
+		for (LegoU32 i = 0; i < m_lightCount; i++) {
 			m_lightColorProducts[i].m_red = 0.0f;
 			m_lightColorProducts[i].m_grn = 0.0f;
 			m_lightColorProducts[i].m_blu = 0.0f;
@@ -104,158 +102,22 @@ void GolModelRenderState::UpdateMaterialCaches()
 		return;
 	}
 
-	GolMaterialColor ambient = activeMaterial->GetAmbient();
+	GolMaterialColor ambient = material->GetAmbient();
 	m_activeMaterialColor.m_red = (static_cast<LegoU32>(ambient.m_red & 0xff) * m_materialColorValue.m_red) >> 8;
 	m_activeMaterialColor.m_grn = (static_cast<LegoU32>(ambient.m_grn & 0xff) * m_materialColorValue.m_grn) >> 8;
 	m_activeMaterialColor.m_blu = (static_cast<LegoU32>(ambient.m_blu & 0xff) * m_materialColorValue.m_blu) >> 8;
 	m_activeMaterialColor.m_alp = ambient.m_alp;
 
-	GolMaterialColor diffuse = activeMaterial->GetDiffuse();
-	if (m_lightCount > zero) {
-		LegoU32 i = 0;
-		LegoU32 red = diffuse.m_red & 0xff;
-		LegoU32 grn = diffuse.m_grn & 0xff;
-		LegoU32 blu = diffuse.m_blu & 0xff;
-		FColorRGB* lightProduct = m_lightColorProducts;
-		ColorRGBA* lightColor = m_lightColors;
-
-		while (i < m_lightCount) {
-			LegoS32 product = static_cast<LegoS32>((red * lightColor->m_red) >> 8);
-			lightProduct->m_red = static_cast<LegoFloat>(product);
-
-			product = static_cast<LegoS32>((grn * lightColor->m_grn) >> 8);
-			lightProduct->m_grn = static_cast<LegoFloat>(product);
-
-			product = static_cast<LegoS32>((blu * lightColor->m_blu) >> 8);
-			lightProduct->m_blu = static_cast<LegoFloat>(product);
-			lightProduct++;
-			lightColor++;
-			i++;
-		}
+	GolMaterialColor diffuse = material->GetDiffuse();
+	for (LegoU32 i = 0; i < m_lightCount; i++) {
+		LegoS32 red = (static_cast<LegoU32>(diffuse.m_red & 0xff) * m_lightColors[i].m_red) >> 8;
+		m_lightColorProducts[i].m_red = static_cast<LegoFloat>(red);
+		LegoS32 grn = (static_cast<LegoU32>(diffuse.m_grn & 0xff) * m_lightColors[i].m_grn) >> 8;
+		m_lightColorProducts[i].m_grn = static_cast<LegoFloat>(grn);
+		LegoS32 blu = (static_cast<LegoU32>(diffuse.m_blu & 0xff) * m_lightColors[i].m_blu) >> 8;
+		m_lightColorProducts[i].m_blu = static_cast<LegoFloat>(blu);
 	}
 }
-
-#else
-
-// FUNCTION: LEGORACERS 0x0040ec00
-__declspec(naked) void GolModelRenderState::UpdateMaterialCaches()
-{
-	__asm {
-		sub esp, 0x10
-		push ebx
-		push esi
-		mov esi, dword ptr [ecx + 0x2c]
-		xor ebx, ebx
-		cmp esi, ebx
-		push edi
-		jne L_UpdateMaterialCaches_0
-		mov eax, dword ptr [ecx + 4]
-		xor edx, edx
-		cmp eax, ebx
-		mov byte ptr [ecx + 0x30], bl
-		mov byte ptr [ecx + 0x31], bl
-		mov byte ptr [ecx + 0x32], bl
-		mov byte ptr [ecx + 0x33], 0xff
-		jbe L_UpdateMaterialCaches_1
-		lea eax, [ecx + 0x5c]
-	L_UpdateMaterialCaches_2:
-		mov dword ptr [eax - 4], ebx
-		mov dword ptr [eax], ebx
-		mov dword ptr [eax + 4], ebx
-		mov esi, dword ptr [ecx + 4]
-		inc edx
-		add eax, 0xc
-		cmp edx, esi
-		jb L_UpdateMaterialCaches_2
-		pop edi
-		pop esi
-		pop ebx
-		add esp, 0x10
-		ret
-	L_UpdateMaterialCaches_0:
-		mov eax, dword ptr [esi + 0x10]
-		xor edx, edx
-		mov dl, byte ptr [ecx + 0xc]
-		mov dword ptr [esp + 0x14], eax
-		and eax, 0xff
-		imul edx, eax
-		shr edx, 8
-		mov byte ptr [ecx + 0x30], dl
-		mov edx, dword ptr [esp + 0x15]
-		xor eax, eax
-		and edx, 0xff
-		mov al, byte ptr [ecx + 0xd]
-		imul eax, edx
-		shr eax, 8
-		mov byte ptr [ecx + 0x31], al
-		xor eax, eax
-		mov al, byte ptr [ecx + 0xe]
-		mov edx, eax
-		mov eax, dword ptr [esp + 0x16]
-		mov edi, eax
-		mov byte ptr [ecx + 0x33], ah
-		and edi, 0xff
-		mov eax, dword ptr [ecx + 4]
-		imul edx, edi
-		shr edx, 8
-		mov byte ptr [ecx + 0x32], dl
-		mov esi, dword ptr [esi + 0xc]
-		xor edi, edi
-		cmp eax, ebx
-		mov dword ptr [esp + 0x14], esi
-		jbe L_UpdateMaterialCaches_1
-		mov edx, dword ptr [esp + 0x15]
-		mov eax, dword ptr [esp + 0x16]
-		push ebp
-		mov ebp, esi
-		and ebp, 0xff
-		and edx, 0xff
-		and eax, 0xff
-		mov dword ptr [esp + 0x10], edx
-		mov dword ptr [esp + 0x18], eax
-		lea eax, [ecx + 0x5c]
-		lea esi, [ecx + 0x3d]
-		jmp L_UpdateMaterialCaches_3
-	L_UpdateMaterialCaches_4:
-		mov edx, dword ptr [esp + 0x10]
-	L_UpdateMaterialCaches_3:
-		xor ebx, ebx
-		add eax, 0xc
-		mov bl, byte ptr [esi - 1]
-		add esi, 4
-		imul ebx, ebp
-		shr ebx, 8
-		mov dword ptr [esp + 0x14], ebx
-		xor ebx, ebx
-		fild dword ptr [esp + 0x14]
-		fstp dword ptr [eax - 0x10]
-		mov bl, byte ptr [esi - 4]
-		imul ebx, edx
-		shr ebx, 8
-		mov dword ptr [esp + 0x14], ebx
-		xor edx, edx
-		fild dword ptr [esp + 0x14]
-		fstp dword ptr [eax - 0xc]
-		mov dl, byte ptr [esi - 3]
-		imul edx, dword ptr [esp + 0x18]
-		shr edx, 8
-		mov dword ptr [esp + 0x14], edx
-		inc edi
-		fild dword ptr [esp + 0x14]
-		fstp dword ptr [eax - 8]
-		cmp edi, dword ptr [ecx + 4]
-		jb L_UpdateMaterialCaches_4
-		pop ebp
-	L_UpdateMaterialCaches_1:
-		pop edi
-		pop esi
-		pop ebx
-		add esp, 0x10
-		ret
-	}
-}
-
-#endif
 
 // FUNCTION: LEGORACERS 0x0040ed40
 void GolModelRenderState::Begin(GolD3DRenderDevice*, GolModelEntity* p_model, LegoU32 p_lodIndex)
