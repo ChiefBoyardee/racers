@@ -890,12 +890,12 @@ void GolImgFile::ConvertRowIndexed4To16(const LegoU8* p_src, LegoU16* p_dst)
 // FUNCTION: LEGORACERS 0x0040c400
 void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 {
-	LegoU32 i = 1;
-	LegoU32 pixelIndex = 0;
+	LegoU32 i;
+	LegoU32 pixelIndex;
 	LegoU8 index;
 
 	if (m_hasColorKey) {
-		while (i < m_width) {
+		for (i = 1, pixelIndex = 0; i < m_width; i += 2, pixelIndex += 2) {
 			const ColorRGBA* c = &m_palette[*p_src >> 4];
 			LegoU32 r = c->m_red >> m_redSrcShift;
 			LegoU32 g = c->m_grn >> m_grnSrcShift;
@@ -930,9 +930,6 @@ void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 				*p_dst++ = pixel >> 8;
 				*p_dst++ = pixel >> 16;
 			}
-
-			i += 2;
-			pixelIndex += 2;
 		}
 		if (pixelIndex < m_width) {
 			const ColorRGBA* c = &m_palette[*p_src >> 4];
@@ -954,7 +951,7 @@ void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 		}
 	}
 	else {
-		while (i < m_width) {
+		for (i = 1, pixelIndex = 0; i < m_width; i += 2, pixelIndex += 2) {
 			const ColorRGBA* c = &m_palette[*p_src >> 4];
 			LegoU32 pixel = ((c->m_red >> m_redSrcShift) << m_redDstShift) |
 							((c->m_grn >> m_grnSrcShift) << m_grnDstShift) |
@@ -971,9 +968,6 @@ void GolImgFile::ConvertRowIndexed4To24(const LegoU8* p_src, LegoU8* p_dst)
 			*p_dst++ = pixel;
 			*p_dst++ = pixel >> 8;
 			*p_dst++ = pixel >> 16;
-
-			i += 2;
-			pixelIndex += 2;
 		}
 		if (pixelIndex < m_width) {
 			const ColorRGBA* c = &m_palette[*p_src >> 4];
@@ -1462,65 +1456,61 @@ void GolImgFile::UpscaleRow(LegoU8* p_row, LegoS32 p_xScale, LegoU32 p_scaledWid
 void GolImgFile::DownsampleRowPair(LegoU8* p_top, LegoU8* p_bottom, LegoU8* p_dst)
 {
 	LegoU8* end = p_dst + (m_width >> 1) * sizeof(LegoU16);
-	for (; p_dst < end; p_dst += sizeof(LegoU16)) {
-		LegoU32 samples[4];
-		LegoU8* src = p_top;
+	LegoU32 red;
+	LegoU32 grn;
+	LegoU32 blu;
+	LegoU32 i;
 
-		samples[0] = *src;
-		src += (m_srcStrideMask >> 0) & 1;
-		samples[0] |= *src << 8;
-		src += (m_srcStrideMask >> 1) & 1;
-		samples[0] |= *src << 16;
-		src += (m_srcStrideMask >> 2) & 1;
-		samples[0] |= *src << 24;
-		src += (m_srcStrideMask >> 3) & 1;
+	if (m_hasColorKey) {
+		for (; p_dst < end; p_dst += sizeof(LegoU16)) {
+			LegoU32 samples[4];
 
-		samples[1] = *src;
-		src += (m_srcStrideMask >> 0) & 1;
-		samples[1] |= *src << 8;
-		src += (m_srcStrideMask >> 1) & 1;
-		samples[1] |= *src << 16;
-		src += (m_srcStrideMask >> 2) & 1;
-		samples[1] |= *src << 24;
-		src += (m_srcStrideMask >> 3) & 1;
+			samples[0] = *p_top;
+			p_top += (m_srcStrideMask >> 0) & 1;
+			samples[0] |= *p_top << 8;
+			p_top += (m_srcStrideMask >> 1) & 1;
+			samples[0] |= *p_top << 16;
+			p_top += (m_srcStrideMask >> 2) & 1;
+			samples[0] |= *p_top << 24;
+			p_top += (m_srcStrideMask >> 3) & 1;
 
-		p_top = src;
-		src = p_bottom;
+			samples[1] = *p_top;
+			p_top += (m_srcStrideMask >> 0) & 1;
+			samples[1] |= *p_top << 8;
+			p_top += (m_srcStrideMask >> 1) & 1;
+			samples[1] |= *p_top << 16;
+			p_top += (m_srcStrideMask >> 2) & 1;
+			samples[1] |= *p_top << 24;
+			p_top += (m_srcStrideMask >> 3) & 1;
 
-		samples[2] = *src;
-		src += (m_srcStrideMask >> 0) & 1;
-		samples[2] |= *src << 8;
-		src += (m_srcStrideMask >> 1) & 1;
-		samples[2] |= *src << 16;
-		src += (m_srcStrideMask >> 2) & 1;
-		samples[2] |= *src << 24;
-		src += (m_srcStrideMask >> 3) & 1;
+			samples[2] = *p_bottom;
+			p_bottom += (m_srcStrideMask >> 0) & 1;
+			samples[2] |= *p_bottom << 8;
+			p_bottom += (m_srcStrideMask >> 1) & 1;
+			samples[2] |= *p_bottom << 16;
+			p_bottom += (m_srcStrideMask >> 2) & 1;
+			samples[2] |= *p_bottom << 24;
+			p_bottom += (m_srcStrideMask >> 3) & 1;
 
-		samples[3] = *src;
-		src += (m_srcStrideMask >> 0) & 1;
-		samples[3] |= *src << 8;
-		src += (m_srcStrideMask >> 1) & 1;
-		samples[3] |= *src << 16;
-		src += (m_srcStrideMask >> 2) & 1;
-		samples[3] |= *src << 24;
-		src += (m_srcStrideMask >> 3) & 1;
+			samples[3] = *p_bottom;
+			p_bottom += (m_srcStrideMask >> 0) & 1;
+			samples[3] |= *p_bottom << 8;
+			p_bottom += (m_srcStrideMask >> 1) & 1;
+			samples[3] |= *p_bottom << 16;
+			p_bottom += (m_srcStrideMask >> 2) & 1;
+			samples[3] |= *p_bottom << 24;
+			p_bottom += (m_srcStrideMask >> 3) & 1;
 
-		p_bottom = src;
+			red = 0;
+			grn = 0;
+			blu = 0;
 
-		LegoU32 red = 0;
-		LegoU32 grn = 0;
-		LegoU32 blu = 0;
-
-		if (m_hasColorKey) {
-			LegoBool32 foundColorKey = FALSE;
-			for (LegoU32 i = 0; i < 4; i++) {
+			for (i = 0; i < 4; i++) {
 				LegoU32 sampleRed = (samples[i] & m_format.m_redBitMask) >> m_redSrcShift;
 				LegoU32 sampleGrn = (samples[i] & m_format.m_grnBitMask) >> m_grnSrcShift;
 				LegoU32 sampleBlu = (samples[i] & m_format.m_bluBitMask) >> m_bluSrcShift;
 
 				if (sampleRed == m_colorKeyRed && sampleGrn == m_colorKeyGrn && sampleBlu == m_colorKeyBlu) {
-					*reinterpret_cast<LegoU16*>(p_dst) = static_cast<LegoU16>(m_colorKeyPixel);
-					foundColorKey = TRUE;
 					break;
 				}
 
@@ -1529,15 +1519,62 @@ void GolImgFile::DownsampleRowPair(LegoU8* p_top, LegoU8* p_bottom, LegoU8* p_ds
 				blu += sampleBlu;
 			}
 
-			if (!foundColorKey) {
+			if (i < 4) {
+				*reinterpret_cast<LegoU16*>(p_dst) = static_cast<LegoU16>(m_colorKeyPixel);
+			}
+			else {
 				LegoU32 pixel = ((red >> 2) << m_redDstShift) | ((grn >> 2) << m_grnDstShift) |
 								((blu >> 2) << m_bluDstShift) | m_constPixelBits;
 				*reinterpret_cast<LegoU16*>(p_dst) = static_cast<LegoU16>(pixel);
 			}
 		}
-		else {
+	}
+	else {
+		for (; p_dst < end; p_dst += sizeof(LegoU16)) {
+			LegoU32 samples[4];
+
+			samples[0] = *p_top;
+			p_top += (m_srcStrideMask >> 0) & 1;
+			samples[0] |= *p_top << 8;
+			p_top += (m_srcStrideMask >> 1) & 1;
+			samples[0] |= *p_top << 16;
+			p_top += (m_srcStrideMask >> 2) & 1;
+			samples[0] |= *p_top << 24;
+			p_top += (m_srcStrideMask >> 3) & 1;
+
+			samples[1] = *p_top;
+			p_top += (m_srcStrideMask >> 0) & 1;
+			samples[1] |= *p_top << 8;
+			p_top += (m_srcStrideMask >> 1) & 1;
+			samples[1] |= *p_top << 16;
+			p_top += (m_srcStrideMask >> 2) & 1;
+			samples[1] |= *p_top << 24;
+			p_top += (m_srcStrideMask >> 3) & 1;
+
+			samples[2] = *p_bottom;
+			p_bottom += (m_srcStrideMask >> 0) & 1;
+			samples[2] |= *p_bottom << 8;
+			p_bottom += (m_srcStrideMask >> 1) & 1;
+			samples[2] |= *p_bottom << 16;
+			p_bottom += (m_srcStrideMask >> 2) & 1;
+			samples[2] |= *p_bottom << 24;
+			p_bottom += (m_srcStrideMask >> 3) & 1;
+
+			samples[3] = *p_bottom;
+			p_bottom += (m_srcStrideMask >> 0) & 1;
+			samples[3] |= *p_bottom << 8;
+			p_bottom += (m_srcStrideMask >> 1) & 1;
+			samples[3] |= *p_bottom << 16;
+			p_bottom += (m_srcStrideMask >> 2) & 1;
+			samples[3] |= *p_bottom << 24;
+			p_bottom += (m_srcStrideMask >> 3) & 1;
+
+			red = 0;
+			grn = 0;
+			blu = 0;
 			LegoU32 alp = 0;
-			for (LegoU32 i = 0; i < 4; i++) {
+
+			for (i = 0; i < 4; i++) {
 				red += (samples[i] & m_format.m_redBitMask) >> m_redSrcShift;
 				grn += (samples[i] & m_format.m_grnBitMask) >> m_grnSrcShift;
 				blu += (samples[i] & m_format.m_bluBitMask) >> m_bluSrcShift;
