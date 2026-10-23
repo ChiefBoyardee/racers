@@ -211,59 +211,123 @@ __declspec(naked) void GolMath::MultiplyMatrix4Affine(
 
 #endif
 
-// FUNCTION: LEGORACERS 0x00449170
+#ifdef COMPAT_MODE
+
 void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
 {
 	*p_sin = static_cast<LegoFloat>(sin(p_angle));
 	*p_cos = static_cast<LegoFloat>(cos(p_angle));
 }
 
+#else
+
+// FUNCTION: LEGORACERS 0x00449170
+__declspec(naked) void GolMath::SinCos(LegoFloat p_angle, LegoFloat* p_sin, LegoFloat* p_cos)
+{
+	__asm {
+		fld dword ptr [esp + 4]
+		fsincos
+		mov ecx, dword ptr [esp + 0xc]
+		mov edx, dword ptr [esp + 8]
+		fstp dword ptr [ecx]
+		fstp dword ptr [edx]
+		ret
+	}
+}
+
+#endif
+
 // FUNCTION: LEGORACERS 0x00449190
 void GolMath::MultiplyMatrix3(const LegoFloat* p_left, const LegoFloat* p_right, LegoFloat* p_dest)
 {
-	LegoFloat value = p_left[1] * p_right[3];
-	value += p_left[2] * p_right[6];
-	value += p_left[0] * p_right[0];
+	LegoFloat term = p_left[1];
+	term *= p_right[3];
+	LegoFloat value = p_left[2];
+	value *= p_right[6];
+	value += term;
+	term = p_left[0];
+	term *= p_right[0];
+	value += term;
 	p_dest[0] = value;
 
-	value = p_right[4] * p_left[1];
-	value += p_right[7] * p_left[2];
-	value += p_right[1] * p_left[0];
+	term = p_right[4];
+	term *= p_left[1];
+	value = p_left[2];
+	value *= p_right[7];
+	value += term;
+	term = p_right[1];
+	term *= p_left[0];
+	value += term;
 	p_dest[1] = value;
 
-	value = p_right[8] * p_left[2];
-	value += p_left[1] * p_right[5];
-	value += p_right[2] * p_left[0];
+	term = p_right[8];
+	term *= p_left[2];
+	value = p_left[1];
+	value *= p_right[5];
+	value += term;
+	term = p_right[2];
+	term *= p_left[0];
+	value += term;
 	p_dest[2] = value;
 
-	value = p_left[4] * p_right[3];
-	value += p_left[5] * p_right[6];
-	value += p_left[3] * p_right[0];
+	term = p_left[4];
+	term *= p_right[3];
+	value = p_left[5];
+	value *= p_right[6];
+	value += term;
+	term = p_left[3];
+	term *= p_right[0];
+	value += term;
 	p_dest[3] = value;
 
-	value = p_left[5] * p_right[7];
-	value += p_left[3] * p_right[1];
-	value += p_left[4] * p_right[4];
+	term = p_left[5];
+	term *= p_right[7];
+	value = p_left[3];
+	value *= p_right[1];
+	value += term;
+	term = p_left[4];
+	term *= p_right[4];
+	value += term;
 	p_dest[4] = value;
 
-	value = p_left[3] * p_right[2];
-	value += p_right[8] * p_left[5];
-	value += p_left[4] * p_right[5];
+	term = p_left[3];
+	term *= p_right[2];
+	value = p_right[8];
+	value *= p_left[5];
+	value += term;
+	term = p_left[4];
+	term *= p_right[5];
+	value += term;
 	p_dest[5] = value;
 
-	value = p_left[8] * p_right[6];
-	value += p_right[3] * p_left[7];
-	value += p_left[6] * p_right[0];
+	term = p_left[8];
+	term *= p_right[6];
+	value = p_right[3];
+	value *= p_left[7];
+	value += term;
+	term = p_left[6];
+	term *= p_right[0];
+	value += term;
 	p_dest[6] = value;
 
-	value = p_right[1] * p_left[6];
-	value += p_left[8] * p_right[7];
-	value += p_right[4] * p_left[7];
+	term = p_right[1];
+	term *= p_left[6];
+	value = p_left[8];
+	value *= p_right[7];
+	value += term;
+	term = p_right[4];
+	term *= p_left[7];
+	value += term;
 	p_dest[7] = value;
 
-	value = p_left[7] * p_right[5];
-	value += p_left[8] * p_right[8];
-	value += p_left[6] * p_right[2];
+	term = p_left[7];
+	term *= p_right[5];
+	value = p_left[8];
+	value *= p_right[8];
+	value += term;
+	term = p_left[6];
+	term *= p_right[2];
+	value += term;
 	p_dest[8] = value;
 }
 
@@ -664,67 +728,127 @@ LegoBool32 GolMath::MoveToward(
 // FUNCTION: LEGORACERS 0x00449b90
 void GolMath::TransformVector(GolVec3 p_src, const LegoFloat* p_matrix, GolVec3* p_dest)
 {
-	LegoFloat x = p_matrix[2] * p_src.m_z;
-	x += p_matrix[1] * p_src.m_y;
-	x += p_src.m_x * p_matrix[0];
+	LegoFloat term = p_matrix[1];
+	term *= p_src.m_y;
+	LegoFloat x = p_matrix[2];
+	x *= p_src.m_z;
+	x += term;
+	term = p_src.m_x;
+	term *= p_matrix[0];
+	x += term;
 	p_dest->m_x = x;
 
-	LegoFloat y = p_matrix[5] * p_src.m_z;
-	y += p_matrix[4] * p_src.m_y;
-	y += p_matrix[3] * p_src.m_x;
+	term = p_matrix[4];
+	term *= p_src.m_y;
+	LegoFloat y = p_matrix[5];
+	y *= p_src.m_z;
+	y += term;
+	term = p_matrix[3];
+	term *= p_src.m_x;
+	y += term;
 	p_dest->m_y = y;
 
-	LegoFloat z = p_matrix[8] * p_src.m_z;
-	z += p_matrix[7] * p_src.m_y;
-	z += p_matrix[6] * p_src.m_x;
+	term = p_matrix[7];
+	term *= p_src.m_y;
+	LegoFloat z = p_matrix[8];
+	z *= p_src.m_z;
+	z += term;
+	term = p_matrix[6];
+	term *= p_src.m_x;
+	z += term;
 	p_dest->m_z = z;
 }
 
 // FUNCTION: LEGORACERS 0x00449bf0
 void GolMath::MultiplyMatrixByTranspose(const LegoFloat* p_left, const LegoFloat* p_right, LegoFloat* p_dest)
 {
-	LegoFloat value = p_left[1] * p_right[1];
-	value += p_left[2] * p_right[2];
-	value += p_left[0] * p_right[0];
+	LegoFloat term = p_left[1];
+	term *= p_right[1];
+	LegoFloat value = p_left[2];
+	value *= p_right[2];
+	value += term;
+	term = p_left[0];
+	term *= p_right[0];
+	value += term;
 	p_dest[0] = value;
 
-	value = p_right[4] * p_left[1];
-	value += p_right[5] * p_left[2];
-	value += p_right[3] * p_left[0];
+	term = p_right[4];
+	term *= p_left[1];
+	value = p_left[2];
+	value *= p_right[5];
+	value += term;
+	term = p_right[3];
+	term *= p_left[0];
+	value += term;
 	p_dest[1] = value;
 
-	value = p_right[8] * p_left[2];
-	value += p_left[1] * p_right[7];
-	value += p_right[6] * p_left[0];
+	term = p_right[8];
+	term *= p_left[2];
+	value = p_left[1];
+	value *= p_right[7];
+	value += term;
+	term = p_right[6];
+	term *= p_left[0];
+	value += term;
 	p_dest[2] = value;
 
-	value = p_left[4] * p_right[1];
-	value += p_left[5] * p_right[2];
-	value += p_left[3] * p_right[0];
+	term = p_left[4];
+	term *= p_right[1];
+	value = p_left[5];
+	value *= p_right[2];
+	value += term;
+	term = p_left[3];
+	term *= p_right[0];
+	value += term;
 	p_dest[3] = value;
 
-	value = p_left[5] * p_right[5];
-	value += p_left[3] * p_right[3];
-	value += p_left[4] * p_right[4];
+	term = p_left[5];
+	term *= p_right[5];
+	value = p_left[3];
+	value *= p_right[3];
+	value += term;
+	term = p_left[4];
+	term *= p_right[4];
+	value += term;
 	p_dest[4] = value;
 
-	value = p_left[3] * p_right[6];
-	value += p_right[8] * p_left[5];
-	value += p_left[4] * p_right[7];
+	term = p_left[3];
+	term *= p_right[6];
+	value = p_right[8];
+	value *= p_left[5];
+	value += term;
+	term = p_left[4];
+	term *= p_right[7];
+	value += term;
 	p_dest[5] = value;
 
-	value = p_left[8] * p_right[2];
-	value += p_right[1] * p_left[7];
-	value += p_left[6] * p_right[0];
+	term = p_left[8];
+	term *= p_right[2];
+	value = p_right[1];
+	value *= p_left[7];
+	value += term;
+	term = p_left[6];
+	term *= p_right[0];
+	value += term;
 	p_dest[6] = value;
 
-	value = p_right[3] * p_left[6];
-	value += p_left[8] * p_right[5];
-	value += p_right[4] * p_left[7];
+	term = p_right[3];
+	term *= p_left[6];
+	value = p_left[8];
+	value *= p_right[5];
+	value += term;
+	term = p_right[4];
+	term *= p_left[7];
+	value += term;
 	p_dest[7] = value;
 
-	value = p_left[7] * p_right[7];
-	value += p_left[8] * p_right[8];
-	value += p_left[6] * p_right[6];
+	term = p_left[7];
+	term *= p_right[7];
+	value = p_left[8];
+	value *= p_right[8];
+	value += term;
+	term = p_left[6];
+	term *= p_right[6];
+	value += term;
 	p_dest[8] = value;
 }
