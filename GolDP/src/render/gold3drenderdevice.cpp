@@ -4465,9 +4465,9 @@ void GolD3DRenderDevice::FUN_1000d210(LegoU32 p_outputFirst, LegoU32 p_firstVert
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
-	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
 	const GolVec3* normal = m_sourceNormals + p_firstVertex;
 	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
+	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
 
 	for (; position < positionEnd; position++, normal++, uv++, vertex++) {
 		vertex->m_x = (m_currentMatrix->m_m[0][0] * position->m_x) * m_currentScale;
@@ -4513,9 +4513,9 @@ void GolD3DRenderDevice::FUN_1000d440(LegoU32 p_outputFirst, LegoU32 p_firstVert
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
+	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 	LegoU32* color = m_sourceColors + p_firstVertex;
 	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
-	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 
 	while (position < positionEnd) {
 		vertex->m_x = m_currentMatrix->m_m[0][0] * position->m_x;
@@ -4560,9 +4560,9 @@ void GolD3DRenderDevice::FUN_1000d5d0(LegoU32 p_outputFirst, LegoU32 p_firstVert
 {
 	const GolVec3* position = m_sourcePositions + p_firstVertex;
 	const GolVec3* positionEnd = position + p_vertexCount;
+	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 	LegoU32* color = m_sourceColors + p_firstVertex;
 	const GolVec2* uv = m_sourceTexCoords + p_firstVertex;
-	CommandVertex* vertex = m_unk0xc428c + p_outputFirst;
 
 	while (position < positionEnd) {
 		vertex->m_x = m_currentMatrix->m_m[0][0] * position->m_x;
