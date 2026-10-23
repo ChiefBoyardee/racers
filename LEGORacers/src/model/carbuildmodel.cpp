@@ -1345,8 +1345,13 @@ LegoS32 CarBuildModel::ComparePrimitiveMaterial(const void* p_lhs, const void* p
 {
 	const BuildPrimitive* lhs = *static_cast<BuildPrimitive* const*>(p_lhs);
 	const BuildPrimitive* rhs = *static_cast<BuildPrimitive* const*>(p_rhs);
+	LegoS32 result = lhs->m_materialIndex - rhs->m_materialIndex;
 
-	return lhs->m_materialIndex - rhs->m_materialIndex;
+	if (result != 0) {
+		return result;
+	}
+
+	return 0;
 }
 
 // FUNCTION: LEGORACERS 0x0049b170
